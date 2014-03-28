@@ -11,6 +11,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -72,9 +73,17 @@ public class ImageGetter {
 		}
 	}
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args)
 	{
-		GameFiles.load();
+		try {
+			GameFiles.load();
+		}
+		catch (IOException e) {
+			JOptionPane.showMessageDialog(null,
+					"Unable to read Battle Nations game files.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
 		JList<Unit> list = new JList<Unit>(Unit.getPlayer());
         JScrollPane listScroller = new JScrollPane(list);
