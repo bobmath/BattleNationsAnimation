@@ -5,7 +5,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -13,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -28,6 +32,8 @@ public class ImageGetter {
 		private JList<Unit> list;
 		private Animation anim;
 		private int size;
+		public int tick = 0;
+		public Timer timer;
 
 		public ImageBox(int size, JList<Unit> list) {
 			this.size = size;
@@ -48,7 +54,22 @@ public class ImageGetter {
 				Animation.Frame frame = anim.getFrame(0);
 				frame.scale(size, g2);
 				frame.center(g2);
-				anim.drawFrame(0, g2);
+				anim.drawFrame(tick, g2);
+				
+				if (timer != null) {
+					timer.stop();
+				}
+				
+				timer = new Timer(50, new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						
+						tick += 1;
+						
+						repaint(0, 0, 0, size, size);
+					}
+				});
+				timer.start();
 			}
 		}
 
@@ -56,6 +77,10 @@ public class ImageGetter {
 		public void valueChanged(ListSelectionEvent ev) {
 			if (anim != null) {
 				anim.freeBitmap();
+				if (timer != null) {
+					timer.stop();
+					tick = 0;
+				}
 				anim = null;
 			}
 			
