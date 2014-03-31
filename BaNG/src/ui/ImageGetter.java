@@ -8,7 +8,6 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -55,17 +54,17 @@ public class ImageGetter {
 				frame.scale(size, g2);
 				frame.center(g2);
 				anim.drawFrame(tick, g2);
-				
+
 				if (timer != null) {
 					timer.stop();
 				}
-				
+				//Change the number in the line below to modify anim speed
 				timer = new Timer(50, new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						
+
 						tick += 1;
-						
+
 						repaint(0, 0, 0, size, size);
 					}
 				});
@@ -87,7 +86,7 @@ public class ImageGetter {
 			Unit unit = list.getSelectedValue();
 			if (unit != null) {
 				try {
-					anim = unit.getBackAnimation();
+					anim = unit.getFrontAnimation();
 					if (anim != null)
 						anim.loadBitmap();
 				}
@@ -112,7 +111,7 @@ public class ImageGetter {
 
 		JList<Unit> list = new JList<Unit>(Unit.getPlayer());
         JScrollPane listScroller = new JScrollPane(list);
-        listScroller.setPreferredSize(new Dimension(200, 200));
+        listScroller.setPreferredSize(new Dimension(400, 300));
 		
 		ImageBox img = new ImageBox(200, list);
 		

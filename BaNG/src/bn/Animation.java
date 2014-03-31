@@ -186,10 +186,6 @@ public class Animation {
 		return frames[num % frames.length];
 	}
 	
-	public int frameCount () {
-		return frames.length;
-	}
-	
 	public void drawFrame(int num, Graphics2D g) {
 		Paint oldPaint = g.getPaint();
 		g.setPaint(bitmap.getTexture());

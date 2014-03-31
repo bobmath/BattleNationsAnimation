@@ -16,6 +16,7 @@ public class Unit implements Comparable<Unit> {
 
 	private String tag;
 	private String name;
+	private String entry;
 	private String side;
 	private String backAnimName, frontAnimName;
 
@@ -58,11 +59,11 @@ public class Unit implements Comparable<Unit> {
 		this.tag = tag;
 		name = Text.get(json.getString("name"));
 		if (name == null) name = tag;
-		if (name.startsWith("Speciment "))
-			name = "Specimen" + name.substring(9);
+		if (name.startsWith("Specimen "))
+			name = "Specimen " + name.substring(9);
 		side = json.getString("side");
-		backAnimName = json.getString("backIdleAnimation");
 		frontAnimName = json.getString("frontIdleAnimation");
+		backAnimName = json.getString("backIdleAnimation");
 	}
 	
 	public String getTag() {
@@ -74,7 +75,8 @@ public class Unit implements Comparable<Unit> {
 	}
 	
 	public String toString() {
-		return name;
+		entry = name + " (" + tag + ")";
+		return entry;
 	}
 	
 	public String getSide() {
