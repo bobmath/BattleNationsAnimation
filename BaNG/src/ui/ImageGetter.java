@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.swing.BoxLayout;
@@ -21,6 +22,8 @@ import javax.swing.event.ListSelectionListener;
 
 import bn.Animation;
 import bn.GameFiles;
+import bn.GifFrame;
+import bn.ImageUtil;
 import bn.Unit;
 
 public class ImageGetter {
@@ -96,7 +99,21 @@ public class ImageGetter {
 			repaint(0, 0, 0, size, size);
 		}
 	}
-
+	
+	public void saveCurrentAsGIF() {
+		
+//		GifFrame frame = new GifFrame(img, delay);
+		
+	//	ImageUtil.saveAnimatedGIF(outstream, frames, loopCount)
+		
+		long delay = 50L;
+		
+		GifFrame frame = new GifFrame(BufferedImage img, delay);
+		
+		
+		
+	}
+	
 	public static void main(String[] args)
 	{
 		try {

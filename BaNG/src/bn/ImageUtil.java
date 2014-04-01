@@ -66,6 +66,8 @@ public class ImageUtil
 
       iw.endWriteSequence();
       ios.close();
+           
+      
    }
 
    private static void configureGIFFrame(IIOMetadata meta, String delayTime, int imageIndex, String disposalMethod, int loopCount)
