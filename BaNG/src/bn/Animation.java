@@ -1,11 +1,14 @@
 package bn;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Polygon;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -193,6 +196,17 @@ public class Animation {
 		g.setPaint(oldPaint);
 	}
 	
+	public ArrayList<GifFrame> getGifFrames () {
+		ArrayList<GifFrame> gifFrames = new ArrayList<GifFrame>();
+		
+		for(int i=0; i < frames.length; i ++ ) {
+			Frame frame = frames[i];
+			gifFrames.add(frame.getGifFrame(bitmap.getTexture().getImage()));
+		}
+		
+		return gifFrames;
+	}
+	
 	public static class Frame {
 		private AffineTransform[] transforms;
 		private Polygon[] polys;
@@ -300,6 +314,20 @@ public class Animation {
 				g.fillPolygon(polys[i]);
 				g.setTransform(oldTrans);
 			}
+		}
+		
+		public GifFrame getGifFrame (BufferedImage image) {
+			
+			Graphics2D g = image.createGraphics();
+			AffineTransform oldTrans = g.getTransform();
+			for (int i = 0; i < polys.length; i++) {
+				g.transform(transforms[i]);
+				g.fillPolygon(polys[i]);
+				g.setTransform(oldTrans);
+			}
+			
+			GifFrame gifFrame = new GifFrame(image, 30);
+			return gifFrame;
 		}
 
 	} // class Frame
