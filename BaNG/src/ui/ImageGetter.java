@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 import javax.swing.BoxLayout;
@@ -16,7 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import bn.Animation;
+import bn.DisplayAnimation;
 import bn.GameFiles;
 import bn.Unit;
 
@@ -26,7 +27,7 @@ public class ImageGetter {
 		private static final long serialVersionUID = 1L;
 
 		private JList<Unit> list;
-		private Animation anim;
+		private DisplayAnimation anim;
 		private int size;
 
 		public ImageBox(int size, JList<Unit> list) {
@@ -44,32 +45,28 @@ public class ImageGetter {
 				Graphics2D g2 = (Graphics2D) g;
 				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 						RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				g2.translate(0.5*size, 0.5*size);
-				Animation.Frame frame = anim.getFrame(0);
-				frame.scale(size, g2);
-				frame.center(g2);
+				Rectangle2D bounds = anim.getBounds(0);
+				anim.setPosition((size - bounds.getWidth())/2 - bounds.getX(),
+						(size - bounds.getHeight())/2 - bounds.getY());
 				anim.drawFrame(0, g2);
 			}
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent ev) {
-			if (anim != null) {
-				anim.freeBitmap();
-				anim = null;
-			}
-			
+			anim = null;			
 			Unit unit = list.getSelectedValue();
 			if (unit != null) {
 				try {
 					anim = unit.getBackAnimation();
-					if (anim != null)
-						anim.loadBitmap();
 				}
-				catch (IOException ex) { }
+				catch (IOException ex) {
+					JOptionPane.showMessageDialog(null,
+							"Unable to load animation",
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
-			
-			repaint(0, 0, 0, size, size);
+			repaint();
 		}
 	}
 
@@ -87,9 +84,9 @@ public class ImageGetter {
 
 		JList<Unit> list = new JList<Unit>(Unit.getPlayer());
         JScrollPane listScroller = new JScrollPane(list);
-        listScroller.setPreferredSize(new Dimension(200, 200));
+        listScroller.setPreferredSize(new Dimension(300, 300));
 		
-		ImageBox img = new ImageBox(200, list);
+		ImageBox img = new ImageBox(300, list);
 		
         JFrame frame = new JFrame("ImageGetter");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -85,12 +85,12 @@ public class Unit implements Comparable<Unit> {
 		return side.equals("Player");
 	}
 	
-	public Animation getBackAnimation() throws IOException {
-		return Animation.get(backAnimName);
+	public DisplayAnimation getBackAnimation() throws IOException {
+		return DisplayAnimation.get(backAnimName);
 	}
 	
-	public Animation getFrontAnimation() throws IOException {
-		return Animation.get(frontAnimName);
+	public DisplayAnimation getFrontAnimation() throws IOException {
+		return DisplayAnimation.get(frontAnimName);
 	}
 
 	@Override

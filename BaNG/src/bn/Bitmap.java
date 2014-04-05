@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Bitmap {
+	
 	private static Map<String,SoftReference<Bitmap>> cache =
 			new HashMap<String,SoftReference<Bitmap>>();
 	
@@ -16,8 +17,7 @@ public class Bitmap {
 	private int width, height, bits;
 	private TexturePaint texture;
 	
-	public static Bitmap get(String name) throws IOException
-	{
+	public static Bitmap get(String name) throws IOException {
 		String lc = name.toLowerCase();
 		Bitmap bmp = null;
 		SoftReference<Bitmap> bmpRef = cache.get(lc);
@@ -55,6 +55,10 @@ public class Bitmap {
 		return texture;
 	}
 
+	public double getMeanSize() {
+		return Math.sqrt((double) width * height);
+	}
+
 	private void read() throws IOException
 	{
 		LittleEndianInputStream in = new LittleEndianInputStream(
@@ -72,6 +76,9 @@ public class Bitmap {
 			else
 				readRLE(im, in);
 			texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x7fff, 0x7fff));
+		}
+		catch (ArrayIndexOutOfBoundsException e) {
+			throw new FileFormatException("Invalid array index", e);
 		}
 		finally {
 			in.close();
