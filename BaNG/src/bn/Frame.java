@@ -21,6 +21,7 @@ public class Frame {
 	}
 	
 	public double getScale() {
+		if (transforms.length == 0) return 0;
 		double[] scale = new double[transforms.length];
 		for (int i = 0; i < scale.length; i++)
 			scale[i] = Math.abs(transforms[i].getDeterminant());
@@ -41,12 +42,13 @@ public class Frame {
 			throws IOException
 	{
 		int numPts = in.readShort();
-		if (numPts <= 0 || numPts % 6 != 0)
+		if (numPts < 0 || numPts % 6 != 0)
 			throw new FileFormatException("Unexpected frame size");
 		int numPolys = numPts / 6;
 		polys = new Polygon[numPolys];
 		transforms = new AffineTransform[numPolys];
 		if (ver > 4) in.readByte();
+		if (numPolys == 0) return;
 		
 		xMin = Integer.MAX_VALUE;
 		xMax = Integer.MIN_VALUE;

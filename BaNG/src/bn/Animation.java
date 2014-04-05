@@ -112,7 +112,10 @@ public class Animation {
 		readFrames(in, ver);
 		if (ver > 4)
 			readSequence(in);
-		scale = frames[0].getScale();
+		for (int i = 0; i < frames.length; i++) {
+			scale = frames[i].getScale();
+			if (scale != 0) break;
+		}
 	}
 	
 	private void readFrames(LittleEndianInputStream in, int ver) throws IOException
