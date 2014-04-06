@@ -14,12 +14,12 @@ public class FrameSequence {
 
 	private static Map<String,String> packageIndex;
 	private static Map<String,FrameSequence> animCache;
-	
+
 	private String packageName, name;
 	private int xMin, xMax, yMin, yMax;
 	private Frame[] frames;
 	private double scale;
-	
+
 	public static FrameSequence get(String name) throws IOException {
 		if (packageIndex == null) buildIndex();
 		String lc = name.toLowerCase();
@@ -31,7 +31,7 @@ public class FrameSequence {
 		}
 		return animCache.get(lc);
 	}
-	
+
 	private FrameSequence(String name) {
 		packageName = name;
 	}
@@ -43,11 +43,11 @@ public class FrameSequence {
 	public String getName() {
 		return name;
 	}
-	
+
 	public Rectangle getBounds() {
 		return new Rectangle(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
 	}
-	
+
 	public double getScale() {
 		return scale;
 	}
@@ -55,7 +55,7 @@ public class FrameSequence {
 	public int getNumFrames() {
 		return frames.length;
 	}
-	
+
 	public Frame getFrame(int num) {
 		return frames[num];
 	}
@@ -103,7 +103,7 @@ public class FrameSequence {
 			in.close();
 		}
 	}
-	
+
 	private void read(LittleEndianInputStream in, int ver) throws IOException
 	{
 		name = in.readCString(256);
@@ -117,7 +117,7 @@ public class FrameSequence {
 			if (scale != 0) break;
 		}
 	}
-	
+
 	private void readFrames(LittleEndianInputStream in, int ver) throws IOException
 	{
 		int numCoords = in.readShort() * 4;
@@ -130,7 +130,7 @@ public class FrameSequence {
 			default: throw new FileFormatException("Unknown point size");
 			}
 		}
-		
+
 		int[] coords = new int[numCoords];
 		for (int i = 0; i < numCoords; i += 4) {
 			coords[i] = in.readShort();
@@ -141,12 +141,12 @@ public class FrameSequence {
 			for (int j = 0; j < extra; j++)
 				in.readByte();
 		}
-		
+
 		xMin = in.readShort();
 		xMax = in.readShort();
 		yMin = in.readShort();
 		yMax = in.readShort();
-		
+
 		int numFrames = in.readShort();
 		frames = new Frame[numFrames];
 		for (int i = 0; i < numFrames; i++) {

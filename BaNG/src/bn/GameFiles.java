@@ -19,7 +19,7 @@ import util.GlobFilter;
 public class GameFiles {
 	private static boolean initialized;
 	private static File updateDir, installDir;
-	
+
 	public static boolean init()
 	{
 		initialized = true;
@@ -36,7 +36,7 @@ public class GameFiles {
 		}
 		return updateDir.isDirectory() && installDir.isDirectory();
 	}
-	
+
 	public static FileInputStream open(String filename) throws IOException
 	{
 		if (!initialized) init();
@@ -47,7 +47,7 @@ public class GameFiles {
 			return new FileInputStream(new File(installDir, filename));
 		}
 	}
-	
+
 	public static JsonStructure readJson(String filename) throws IOException
 	{
 		JsonReader reader = Json.createReader(new BufferedReader(
@@ -65,7 +65,7 @@ public class GameFiles {
 			reader.close();
 		}
 	}
-	
+
 	public static String[] glob(String pat) {
 		if (!initialized) init();
 		FilenameFilter filter = new GlobFilter(pat);
@@ -89,10 +89,10 @@ public class GameFiles {
 			Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
 		return result;
 	}
-	
+
 	public static void load() throws IOException {
 		Text.load();
 		Unit.load();
 	}
-	
+
 }

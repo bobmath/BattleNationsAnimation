@@ -33,17 +33,17 @@ public class Unit implements Comparable<Unit> {
 			throw new FileFormatException("Json type error", e);
 		}
 	}
-	
+
 	public static Unit get(String tag) {
 		return units.get(tag);
 	}
-	
+
 	public static Unit[] getAll() {
 		Unit[] array = units.values().toArray(new Unit[units.size()]);
 		Arrays.sort(array);
 		return array;
 	}
-	
+
 	public static Unit[] getPlayer() {
 		List<Unit> list = new ArrayList<Unit>();
 		for (Unit unit : units.values())
@@ -64,31 +64,31 @@ public class Unit implements Comparable<Unit> {
 		backAnimName = json.getString("backIdleAnimation");
 		frontAnimName = json.getString("frontIdleAnimation");
 	}
-	
+
 	public String getTag() {
 		return tag;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public String toString() {
 		return name;
 	}
-	
+
 	public String getSide() {
 		return side;
 	}
-	
+
 	private boolean isPlayer() {
 		return side.equals("Player");
 	}
-	
+
 	public Animation getBackAnimation() throws IOException {
 		return Animation.get(backAnimName);
 	}
-	
+
 	public Animation getFrontAnimation() throws IOException {
 		return Animation.get(frontAnimName);
 	}
@@ -100,5 +100,5 @@ public class Unit implements Comparable<Unit> {
 			cmp = this.tag.compareTo(that.tag);
 		return cmp;
 	}
-	
+
 }

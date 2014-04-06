@@ -9,9 +9,9 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 public class Text {
-	
+
 	private static Map<String,String> text;
-	
+
 	public static void load() throws IOException
 	{
 		text = new HashMap<String,String>();
@@ -32,12 +32,12 @@ public class Text {
 			text.put(item.getKey().toLowerCase(), str);
 		}
 	}
-	
+
 	public static String get(String key) {
 		if (key == null) return null;
 		return text.get(key.toLowerCase());
 	}
-	
+
 	private Text() {
 	}
 

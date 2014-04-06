@@ -9,14 +9,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Bitmap {
-	
+
 	private static Map<String,SoftReference<Bitmap>> cache =
 			new HashMap<String,SoftReference<Bitmap>>();
-	
+
 	private String name;
 	private int width, height, bits;
 	private TexturePaint texture;
-	
+
 	public static Bitmap get(String name) throws IOException {
 		String lc = name.toLowerCase();
 		Bitmap bmp = null;
@@ -34,7 +34,7 @@ public class Bitmap {
 	private Bitmap(String name) {
 		this.name = name;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -46,11 +46,11 @@ public class Bitmap {
 	public int getHeight() {
 		return height;
 	}
-	
+
 	public int getBits() {
 		return bits;
 	}
-	
+
 	public TexturePaint getTexture() {
 		return texture;
 	}
@@ -84,14 +84,14 @@ public class Bitmap {
 			in.close();
 		}
 	}
-	
+
 	private void readRaw(BufferedImage im, LittleEndianInputStream in) throws IOException
 	{
 		for (int y = 0; y < height; y++)
 			for (int x = 0; x < width; x++)
 				im.setRGB(x, y, readPix(in));
 	}
-	
+
 	private void readRLE(BufferedImage im, LittleEndianInputStream in) throws IOException
 	{
 		in.readInt(); // length
@@ -101,7 +101,7 @@ public class Bitmap {
 		int[] pal = new int[palSize];
 		for (int i = 0; i < palSize; i++)
 			pal[i] = readPix(in);
-		
+
 		int x = 0;
 		int y = 0;
 		while (y < height) {
@@ -142,5 +142,5 @@ public class Bitmap {
 		}
 		return (a << 24) | (r << 16) | (g << 8) | b;
 	}
-	
+
 }

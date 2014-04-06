@@ -12,14 +12,14 @@ public class Frame {
 	private AffineTransform[] transforms;
 	private Polygon[] polys;
 	private int xMin, xMax, yMin, yMax;
-	
+
 	protected Frame() {
 	}
 
 	public Rectangle getBounds() {
 		return new Rectangle(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
 	}
-	
+
 	public double getScale() {
 		if (transforms.length == 0) return 0;
 		double[] scale = new double[transforms.length];
@@ -28,7 +28,7 @@ public class Frame {
 		Arrays.sort(scale);
 		return Math.sqrt(scale[scale.length / 2]) * 0x7fff;
 	}
-	
+
 	public void draw(Graphics2D g) {
 		AffineTransform oldTrans = g.getTransform();
 		for (int i = 0; i < polys.length; i++) {
@@ -40,7 +40,7 @@ public class Frame {
 
 	protected void read(LittleEndianInputStream in, int ver, int[] coords)
 			throws IOException
-	{
+			{
 		int numPts = in.readShort();
 		if (numPts < 0 || numPts % 6 != 0)
 			throw new FileFormatException("Unexpected frame size");
@@ -49,12 +49,12 @@ public class Frame {
 		transforms = new AffineTransform[numPolys];
 		if (ver > 4) in.readByte();
 		if (numPolys == 0) return;
-		
+
 		xMin = Integer.MAX_VALUE;
 		xMax = Integer.MIN_VALUE;
 		yMin = Integer.MAX_VALUE;
 		yMax = Integer.MIN_VALUE;
-		
+
 		int[] p = new int[6];
 		int[] x = new int[4];
 		int[] y = new int[4];
@@ -91,7 +91,7 @@ public class Frame {
 				throw new FileFormatException("Bad transform", e);
 			}
 			transforms[i] = t;
-			
+
 			x[0] = coords[p0+2];  y[0] = coords[p0+3];
 			x[1] = coords[p1+2];  y[1] = coords[p1+3];
 			x[2] = coords[p2+2];  y[2] = coords[p2+3];
@@ -102,13 +102,13 @@ public class Frame {
 			}
 			polys[i] = new Polygon(x, y, 4);
 		}
-	} // read
-	
+			} // read
+
 	private void stretch(int x, int y) {
 		if (x < xMin) xMin = x;
 		if (x > xMax) xMax = x;
 		if (y < yMin) yMin = y;
 		if (y > yMax) yMax = y;
 	}
-	
+
 }

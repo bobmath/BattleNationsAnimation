@@ -21,7 +21,7 @@ public class GlobFilter extends FileFilter implements FilenameFilter {
 		regex = globToRegex(pattern);
 		matchDirs = dirs;
 	}
-	
+
 	public static Pattern globToRegex(String in) {
 		StringBuilder out = new StringBuilder();
 		out.append('^');
@@ -52,7 +52,7 @@ public class GlobFilter extends FileFilter implements FilenameFilter {
 			return true;
 		return accept(f.getName());
 	}
-	
+
 	public boolean accept(String name) {
 		return regex.matcher(name).matches();
 	}
