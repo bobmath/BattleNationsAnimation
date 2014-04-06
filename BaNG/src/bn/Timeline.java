@@ -3,6 +3,7 @@ package bn;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class Timeline {
 	private double scale;
 
 	public static Timeline get(String name) throws IOException {
-		if (packageIndex == null) buildIndex();
+		if (packageIndex == null) load();
 		String lc = name.toLowerCase();
 		if (!animCache.containsKey(lc)) {
 			String packname = packageIndex.get(lc);
@@ -30,6 +31,13 @@ public class Timeline {
 			readTimeline(packname);
 		}
 		return animCache.get(lc);
+	}
+
+	public static String[] getAllNames() {
+		String[] names = new String[packageIndex.size()];
+		names = packageIndex.entrySet().toArray(names);
+		Arrays.sort(names);
+		return names;
 	}
 
 	private Timeline(String name) {
@@ -64,7 +72,7 @@ public class Timeline {
 		frames[num].draw(g);
 	}
 
-	private static void buildIndex() throws IOException {
+	public static void load() throws IOException {
 		packageIndex = new HashMap<String,String>();
 		animCache = new HashMap<String,Timeline>();
 		try {
@@ -104,7 +112,8 @@ public class Timeline {
 		}
 	}
 
-	private void read(LittleEndianInputStream in, int ver) throws IOException
+	private void read(LittleEndianInputStream in, int ver)
+			throws IOException
 	{
 		name = in.readCString(256);
 		animCache.put(name.toLowerCase(), this);
@@ -115,7 +124,8 @@ public class Timeline {
 		scale = (ver > 4) ? 1.0/32 : 1;
 	}
 
-	private void readFrames(LittleEndianInputStream in, int ver) throws IOException
+	private void readFrames(LittleEndianInputStream in, int ver)
+			throws IOException
 	{
 		int numCoords = in.readShort() * 4;
 		int extra = 0;
@@ -152,7 +162,8 @@ public class Timeline {
 		}
 	}
 
-	private void readSequence(LittleEndianInputStream in) throws IOException
+	private void readSequence(LittleEndianInputStream in)
+			throws IOException
 	{
 		int numSeq = in.readShort();
 		if (numSeq <= 0)
