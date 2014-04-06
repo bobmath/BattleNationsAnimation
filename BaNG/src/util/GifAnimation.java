@@ -12,13 +12,10 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
-
-import com.sun.imageio.plugins.common.PaletteBuilder;
 
 public class GifAnimation {
 	private int width, height, numFrames, delay;
@@ -82,8 +79,8 @@ public class GifAnimation {
 	}
 
 	private static final String metadataFormat = "javax_imageio_gif_image_1.0";
-	private IIOImage[] getImageSequence(ImageWriter writer) throws IIOInvalidTreeException {
-		BufferedImage img = (BufferedImage) PaletteBuilder.createIndexedImage(image);
+	private IIOImage[] getImageSequence(ImageWriter writer) throws IOException {
+		BufferedImage img = getIndexedImage();
 		ImageTypeSpecifier imageType = new ImageTypeSpecifier(img);
 		Rectangle[] frameRects = new Rectangle[numFrames];
 		int[] frameDelays = new int[numFrames];
@@ -140,6 +137,19 @@ public class GifAnimation {
 			j++;
 		}
 		return images;
+	}
+	
+	private BufferedImage getIndexedImage() throws IOException {
+		// Write to gif, then read back.
+		// This is stupid, but the needed functionality isn't exposed.
+		File file = File.createTempFile("anim", ".gif");
+		try {
+			ImageIO.write(image, "gif", file);
+			return ImageIO.read(file);
+		}
+		finally {
+			file.delete();
+		}
 	}
 	
 	private Rectangle findDiffRect(BufferedImage img, int frame) {
