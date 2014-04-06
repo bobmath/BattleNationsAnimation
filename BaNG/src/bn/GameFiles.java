@@ -20,8 +20,7 @@ public class GameFiles {
 	private static boolean initialized;
 	private static File updateDir, installDir;
 
-	public static boolean init()
-	{
+	public static boolean init() {
 		initialized = true;
 		switch (System.getProperty("os.name"))
 		{
@@ -37,8 +36,8 @@ public class GameFiles {
 		return updateDir.isDirectory() && installDir.isDirectory();
 	}
 
-	public static FileInputStream open(String filename) throws IOException
-	{
+	public static FileInputStream open(String filename)
+			throws IOException {
 		if (!initialized) init();
 		try {
 			return new FileInputStream(new File(updateDir, filename));
@@ -48,8 +47,8 @@ public class GameFiles {
 		}
 	}
 
-	public static JsonStructure readJson(String filename) throws IOException
-	{
+	public static JsonStructure readJson(String filename)
+			throws IOException {
 		JsonReader reader = Json.createReader(new BufferedReader(
 				new InputStreamReader(open(filename), "utf-8")));
 		try {
@@ -93,6 +92,7 @@ public class GameFiles {
 	public static void load() throws IOException {
 		Text.load();
 		Unit.load();
+		Building.load();
 		Timeline.load();
 	}
 
