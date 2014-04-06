@@ -34,6 +34,7 @@ public class Text {
 	}
 	
 	public static String get(String key) {
+		if (key == null) return null;
 		return text.get(key.toLowerCase());
 	}
 	
