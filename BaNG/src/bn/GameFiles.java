@@ -93,6 +93,7 @@ public class GameFiles {
 	public static void load() throws IOException {
 		Text.load();
 		Unit.load();
+		Timeline.load();
 	}
 
 }
