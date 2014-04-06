@@ -28,7 +28,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import util.GifAnimation;
-import bn.DisplayAnimation;
+import bn.Animation;
 import bn.GameFiles;
 import bn.Unit;
 
@@ -40,7 +40,7 @@ public class ImageGetter {
 		private static final long serialVersionUID = 1L;
 
 		private JList<Unit> list;
-		private DisplayAnimation anim;
+		private Animation anim;
 		private int size;
 		private Timer timer; 
 		protected int tick;
