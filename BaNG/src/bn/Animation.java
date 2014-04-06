@@ -8,21 +8,21 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 public class Animation {
-	private FrameSequence anim;
+	private Timeline anim;
 	private Bitmap bitmap;
 	private double xPos, yPos, scale;
 
 	public static Animation get(String name) throws IOException {
-		return new Animation(FrameSequence.get(name));
+		return new Animation(Timeline.get(name));
 	}
 
-	public Animation(FrameSequence anim) throws IOException {
+	public Animation(Timeline anim) throws IOException {
 		this.anim = anim;
 		bitmap = Bitmap.get(anim.getPackageName());
 		scale = anim.getScale();
 	}
 
-	public FrameSequence getAnimation() {
+	public Timeline getTimeline() {
 		return anim;
 	}
 

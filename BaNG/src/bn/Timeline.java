@@ -10,17 +10,17 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-public class FrameSequence {
+public class Timeline {
 
 	private static Map<String,String> packageIndex;
-	private static Map<String,FrameSequence> animCache;
+	private static Map<String,Timeline> animCache;
 
 	private String packageName, name;
 	private int xMin, xMax, yMin, yMax;
 	private Frame[] frames;
 	private double scale;
 
-	public static FrameSequence get(String name) throws IOException {
+	public static Timeline get(String name) throws IOException {
 		if (packageIndex == null) buildIndex();
 		String lc = name.toLowerCase();
 		if (!animCache.containsKey(lc)) {
@@ -32,7 +32,7 @@ public class FrameSequence {
 		return animCache.get(lc);
 	}
 
-	private FrameSequence(String name) {
+	private Timeline(String name) {
 		packageName = name;
 	}
 
@@ -66,7 +66,7 @@ public class FrameSequence {
 
 	private static void buildIndex() throws IOException {
 		packageIndex = new HashMap<String,String>();
-		animCache = new HashMap<String,FrameSequence>();
+		animCache = new HashMap<String,Timeline>();
 		try {
 			JsonObject packs = (JsonObject) GameFiles.readJson("AnimationPacks.json");
 			for (JsonValue packname : packs.getJsonArray("animationPacks")) {
@@ -94,7 +94,7 @@ public class FrameSequence {
 			int num = in.readShort();
 			in.readShort();
 			for (int i = 0; i < num; i++)
-				new FrameSequence(name).read(in, ver);
+				new Timeline(name).read(in, ver);
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
 			throw new FileFormatException("Invalid array index", e);
