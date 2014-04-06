@@ -20,15 +20,6 @@ public class Frame {
 		return new Rectangle(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
 	}
 
-	public double getScale() {
-		if (transforms.length == 0) return 0;
-		double[] scale = new double[transforms.length];
-		for (int i = 0; i < scale.length; i++)
-			scale[i] = Math.abs(transforms[i].getDeterminant());
-		Arrays.sort(scale);
-		return Math.sqrt(scale[scale.length / 2]) * 0x7fff;
-	}
-
 	public void draw(Graphics2D g) {
 		AffineTransform oldTrans = g.getTransform();
 		for (int i = 0; i < polys.length; i++) {
@@ -70,10 +61,10 @@ public class Frame {
 
 			int x0 = coords[p0];
 			int y0 = coords[p0+1];
-			stretch(x0, y0);
-			stretch(coords[p1], coords[p1+1]);
-			stretch(coords[p2], coords[p2+1]);
-			stretch(coords[p3], coords[p3+1]);
+			stretchBounds(x0, y0);
+			stretchBounds(coords[p1], coords[p1+1]);
+			stretchBounds(coords[p2], coords[p2+1]);
+			stretchBounds(coords[p3], coords[p3+1]);
 			AffineTransform t = new AffineTransform(
 					coords[p1] - x0, coords[p1+1] - y0,
 					coords[p2] - x0, coords[p2+1] - y0,
@@ -102,9 +93,9 @@ public class Frame {
 			}
 			polys[i] = new Polygon(x, y, 4);
 		}
-			} // read
+	} // read
 
-	private void stretch(int x, int y) {
+	private void stretchBounds(int x, int y) {
 		if (x < xMin) xMin = x;
 		if (x > xMax) xMax = x;
 		if (y < yMin) yMin = y;

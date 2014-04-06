@@ -19,7 +19,7 @@ public class Animation {
 	public Animation(FrameSequence anim) throws IOException {
 		this.anim = anim;
 		bitmap = Bitmap.get(anim.getPackageName());
-		scale = bitmap.getMeanSize() / anim.getScale();
+		scale = anim.getScale();
 	}
 
 	public FrameSequence getAnimation() {
@@ -52,15 +52,11 @@ public class Animation {
 	}
 
 	public double getScale() {
-		return scale;
+		return scale / anim.getScale();
 	}
 
 	public void setScale(double scale) {
-		this.scale = scale;
-	}
-
-	public double getMagnification() {
-		return scale * anim.getScale() / bitmap.getMeanSize();
+		this.scale = scale * anim.getScale();
 	}
 
 	public Rectangle2D.Double getBounds() {

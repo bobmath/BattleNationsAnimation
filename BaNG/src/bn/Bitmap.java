@@ -55,10 +55,6 @@ public class Bitmap {
 		return texture;
 	}
 
-	public double getMeanSize() {
-		return Math.sqrt((double) width * height);
-	}
-
 	private void read() throws IOException
 	{
 		LittleEndianInputStream in = new LittleEndianInputStream(
