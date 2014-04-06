@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -22,6 +23,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
@@ -44,6 +46,7 @@ public class ImageGetter {
 		private int size;
 		private Timer timer; 
 		protected int tick;
+		private boolean front;
 
 		public ImageBox(int size, JList<Unit> list) {
 			this.size = size;
@@ -60,6 +63,11 @@ public class ImageGetter {
 
 		public Dimension getPreferredSize() {
 			return new Dimension(size, size);
+		}
+
+		public void setFront(boolean front) {
+			this.front = front;
+			valueChanged(null);
 		}
 
 		public void paint(Graphics g) {
@@ -87,7 +95,8 @@ public class ImageGetter {
 			Unit unit = list.getSelectedValue();
 			if (unit != null) {
 				try {
-					anim = unit.getBackAnimation();
+					anim = front ? unit.getFrontAnimation()
+							: unit.getBackAnimation();
 					timer.start();
 				}
 				catch (IOException ex) {
@@ -181,6 +190,30 @@ public class ImageGetter {
 
 		fileMenu.add(exportGifItem);
 		menuBar.add(fileMenu);
+
+		JMenu viewMenu = new JMenu("View");
+
+		JRadioButtonMenuItem viewFront = new JRadioButtonMenuItem("Front", false);
+		JRadioButtonMenuItem viewBack = new JRadioButtonMenuItem("Back", true);
+		viewFront.setActionCommand("true");
+		viewBack.setActionCommand("back");
+		ButtonGroup group = new ButtonGroup();
+		group.add(viewFront);
+		group.add(viewBack);
+
+		ActionListener switchView = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				img.setFront(Boolean.parseBoolean(e.getActionCommand()));
+			}
+		};
+		viewFront.addActionListener(switchView);
+		viewBack.addActionListener(switchView);
+
+		viewMenu.add(viewFront);
+		viewMenu.add(viewBack);
+
+		menuBar.add(viewMenu);
 		frame.setJMenuBar(menuBar);
 
 		frame.pack();
