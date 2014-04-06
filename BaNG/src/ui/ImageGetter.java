@@ -35,7 +35,7 @@ import bn.Unit;
 public class ImageGetter {
 
 	public static class ImageBox extends JComponent
-	implements ListSelectionListener, ActionListener
+	implements ListSelectionListener
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -93,12 +93,6 @@ public class ImageGetter {
 				}
 			}
 
-			repaint();
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			tick++;
 			repaint();
 		}
 
