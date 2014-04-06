@@ -152,8 +152,13 @@ public class ImageGetter {
 		}
 	}
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
+		if (!GameFiles.init()) {
+			JOptionPane.showMessageDialog(null,
+					"Unable to find Battle Nations directory.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		try {
 			GameFiles.load();
 		}
