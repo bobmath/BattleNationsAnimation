@@ -113,8 +113,7 @@ public class Timeline {
 	}
 
 	private void read(LittleEndianInputStream in, int ver)
-			throws IOException
-	{
+			throws IOException {
 		name = in.readCString(256);
 		animCache.put(name.toLowerCase(), this);
 		in.readShort();
@@ -125,8 +124,7 @@ public class Timeline {
 	}
 
 	private void readFrames(LittleEndianInputStream in, int ver)
-			throws IOException
-	{
+			throws IOException {
 		int numCoords = in.readShort() * 4;
 		int extra = 0;
 		if (ver == 8) {
@@ -163,8 +161,7 @@ public class Timeline {
 	}
 
 	private void readSequence(LittleEndianInputStream in)
-			throws IOException
-	{
+			throws IOException {
 		int numSeq = in.readShort();
 		if (numSeq <= 0)
 			throw new FileFormatException("Invalid sequence count");
