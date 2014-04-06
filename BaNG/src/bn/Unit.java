@@ -95,7 +95,10 @@ public class Unit implements Comparable<Unit> {
 
 	@Override
 	public int compareTo(Unit that) {
-		return this.name.compareTo(that.name);
+		int cmp = this.name.compareTo(that.name);
+		if (cmp == 0)
+			cmp = this.tag.compareTo(that.tag);
+		return cmp;
 	}
 	
 }
