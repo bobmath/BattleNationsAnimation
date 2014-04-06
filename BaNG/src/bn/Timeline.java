@@ -35,7 +35,7 @@ public class Timeline {
 
 	public static String[] getAllNames() {
 		String[] names = new String[packageIndex.size()];
-		names = packageIndex.entrySet().toArray(names);
+		names = packageIndex.keySet().toArray(names);
 		Arrays.sort(names);
 		return names;
 	}
