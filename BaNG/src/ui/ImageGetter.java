@@ -65,13 +65,17 @@ public class ImageGetter {
 		public void paint(Graphics g) {
 			if (anim != null) {
 				Graphics2D g2 = (Graphics2D) g;
-				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-						RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				setHints(g2);
 				Rectangle2D bounds = anim.getBounds();
 				anim.setPosition((size - bounds.getWidth())/2 - bounds.getX(),
 						(size - bounds.getHeight())/2 - bounds.getY());
 				anim.drawFrame(tick % anim.getNumFrames(), g2);
 			}
+		}
+
+		private static void setHints(Graphics2D g2) {
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		}
 
 		@Override
@@ -125,11 +129,13 @@ public class ImageGetter {
 			g.setColor(new Color(242, 242, 242)); // wiki light gray
 			g.fillRect(0, 0, width, height);
 			out.copyBackground();
+			setHints(g);
 			anim.drawFrame(0, g);
 
 			for (int i = 1; i < frames; i++) {
 				frame = out.getFrame(i);
 				g = frame.createGraphics();
+				setHints(g);
 				anim.drawFrame(i, g);
 			}
 
