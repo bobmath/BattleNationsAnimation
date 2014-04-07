@@ -42,6 +42,7 @@ public class ImageGetter {
 		private static final long serialVersionUID = 1L;
 
 		private Object source;
+		private String name;
 		private Animation anim;
 		private Timer timer; 
 		protected int tick;
@@ -97,18 +98,21 @@ public class ImageGetter {
 				}
 				else if (source instanceof Unit) {
 					Unit unit = (Unit) source;
+					name = unit.getShortName();
 					anim = front ? unit.getFrontAnimation()
 							: unit.getBackAnimation();
 				}
 				else if (source instanceof Building) {
 					Building bld = (Building) source;
+					name = bld.getName();
 					if (front)
 						anim = bld.getBusyAnimation();
 					if (anim == null)
 						anim = bld.getIdleAnimation();
 				}
 				else if (source instanceof String) {
-					anim = Animation.get((String) source);
+					name = (String) source;
+					anim = Animation.get(name);
 				}
 			}
 			catch (IOException ex) {
@@ -125,7 +129,7 @@ public class ImageGetter {
 		public void saveCurrentAsGif() {
 			if (anim == null) return;
 			if (anim == null) return;
-			File file = selectOutputFile("Save as GIF");
+			File file = selectOutputFile("Save as GIF", ".gif");
 			if (file == null) return;
 			try {
 				writeGif(file);
@@ -165,8 +169,13 @@ public class ImageGetter {
 			out.write(file);
 		}
 
-		public File selectOutputFile(String title) {
+		public File selectOutputFile(String title, String ext) {
 			JFileChooser fileChooser = new JFileChooser();
+			if (name != null) {
+				String filename = name.replaceAll("\\W+", "");
+				if (filename.length() > 0)
+					fileChooser.setSelectedFile(new File(filename + ext));
+			}
 			fileChooser.setDialogTitle(title);
 			int userOption = fileChooser.showSaveDialog(this);
 			if (userOption != JFileChooser.APPROVE_OPTION)
@@ -186,7 +195,7 @@ public class ImageGetter {
 
 		public void saveCurrentAsPng() {
 			if (anim == null) return;
-			File file = selectOutputFile("Save as PNG");
+			File file = selectOutputFile("Save as PNG", ".png");
 			if (file == null) return;
 			try {
 				writePng(file);
