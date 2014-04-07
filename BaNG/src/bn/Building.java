@@ -53,7 +53,7 @@ public class Building implements Comparable<Building> {
 		if (name == null) name = tag;
 	}
 
-	public String getKey() {
+	public String getTag() {
 		return tag;
 	}
 
