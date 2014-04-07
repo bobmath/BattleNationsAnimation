@@ -3,10 +3,8 @@ package ui;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFrame;
@@ -34,97 +32,87 @@ public class AnimationTree {
 		frame.setVisible(true);
 	}
 
-	public static DefaultMutableTreeNode buildTree() {
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Animations");
-		root.add(buildingsTree());
-		for (UnitGroup group : UnitGroup.getGroups())
-			root.add(group.getTreeNode());
-		root.add(allAnimTree());
-		return root;
-	}
-
-	private static DefaultMutableTreeNode buildingsTree() {
-		DefaultMutableTreeNode node = new DefaultMutableTreeNode("Buildings");
-		for (Building build : Building.getAll()) {
-			DefaultMutableTreeNode buildNode = new DefaultMutableTreeNode(build);
-			node.add(buildNode);
+	public static TreeNode buildTree() {
+		TreeBuilder builder = new TreeBuilder("Animations");
+		for (Building bld : Building.getAll()) {
+			String name = bld.getName();
+			if (name.startsWith("comp_"))
+				builder.add(bld, false, "Building", "comp", name);
+			else if (name.startsWith("deco_"))
+				builder.add(bld, false, "Building", "deco", name);
+			else if (name.startsWith("map_"))
+				builder.add(bld, false, "Building", "map", name);
+			else if (name.startsWith("terrain_"))
+				builder.add(bld, false, "Building", "terrain", name);
+			else
+				builder.add(bld, true, "Building", name, bld.getTag());
 		}
-		return node;
-	}
-
-	private static DefaultMutableTreeNode allAnimTree() {
-		Map<Character,DefaultMutableTreeNode> nodes = new HashMap<Character,DefaultMutableTreeNode>();
+		for (Unit unit : Unit.getAll()) {
+			builder.add(unit, true, unit.getSide(), unit.getName(), unit.getTag());
+		}
 		for (String name : Timeline.getAllNames()) {
-			Character firstChar = Character.valueOf(name.charAt(0));
-			DefaultMutableTreeNode node = nodes.get(firstChar);
-			if (node == null) {
-				node = new DefaultMutableTreeNode(firstChar);
-				nodes.put(firstChar, node);
-			}
-			node.add(new DefaultMutableTreeNode(name));
+			builder.add(name, false, "All", name.substring(0,1), name);
 		}
-		Character[] chars = new Character[nodes.size()];
-		chars = nodes.keySet().toArray(chars);
-		Arrays.sort(chars);
-		DefaultMutableTreeNode all = new DefaultMutableTreeNode("All");
-		for (Character ch : chars)
-			all.add(nodes.get(ch));
-		return all;
+		return builder.getTree();
 	}
 
-	protected static class UnitGroup implements Comparable<UnitGroup> {
-		private Map<String,List<Unit>> subgroups;
-		private String side;
-		protected static UnitGroup[] getGroups() {
-			Map<String,UnitGroup> groups = new HashMap<String,UnitGroup>();
-			for (Unit unit : Unit.getAll()) {
-				String side = unit.getSide();
-				UnitGroup group = groups.get(side);
-				if (group == null) {
-					group = new UnitGroup(side);
-					groups.put(side, group);
-				}
-				group.add(unit);
-			}
-			UnitGroup[] array = new UnitGroup[groups.size()];
-			array = groups.values().toArray(array);
-			Arrays.sort(array);
-			return array;
+	protected static class TreeBuilder implements Comparable<TreeBuilder> {
+		private String name;
+		private Object value;
+		private boolean collapsible;
+		private Map<String,TreeBuilder> subtrees;
+		protected TreeBuilder(String name) {
+			this.name = name;
+			subtrees = new HashMap<String,TreeBuilder>();
 		}
-		protected DefaultMutableTreeNode getTreeNode() {
-			String[] names = new String[subgroups.size()];
-			names = subgroups.keySet().toArray(names);
-			Arrays.sort(names);
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(side + " Units");
-			for (String name : names) {
-				List<Unit> unitList = subgroups.get(name);
-				DefaultMutableTreeNode subnode = new DefaultMutableTreeNode(name);
-				if (unitList.size() > 1) {
-					for (Unit unit : unitList) {
-						DefaultMutableTreeNode subsubnode = new DefaultMutableTreeNode(unit.getTag());
-						subnode.add(subsubnode);
-					}
-				}
-				node.add(subnode);
+		protected void add(Object value, boolean collapsible, String... names) {
+			String name = names[0];
+			TreeBuilder subtree = subtrees.get(name);
+			if (subtree == null) {
+				subtree = new TreeBuilder(name);
+				subtrees.put(name, subtree);
+			}
+			if (names.length == 1) {
+				subtree.value = value;
+				subtree.collapsible = collapsible;
+			}
+			else {
+				String[] tail = new String[names.length-1];
+				for (int i = 1; i < names.length; i++)
+					tail[i-1] = names[i];
+				subtree.add(value, collapsible, tail);
+			}
+		}
+		protected TreeNode getTree() {
+			if (value == null && subtrees.size() == 1) {
+				TreeBuilder sub = subtrees.values().iterator().next();
+				if (sub.collapsible)
+					return new TreeNode(sub.value, name);
+			}
+			TreeNode node = new TreeNode(value, name);
+			TreeBuilder[] subs = new TreeBuilder[subtrees.size()];
+			subs = subtrees.values().toArray(subs);
+			Arrays.sort(subs);
+			for (TreeBuilder sub : subs) {
+				node.add(sub.getTree());
 			}
 			return node;
 		}
-		protected UnitGroup(String side) {
-			this.side = side;
-			subgroups = new HashMap<String,List<Unit>>();
-		}
-		protected void add(Unit unit) {
-			String name = unit.getName();
-			List<Unit> unitList = subgroups.get(name);
-			if (unitList == null) {
-				unitList = new ArrayList<Unit>();
-				subgroups.put(name, unitList);
-			}
-			unitList.add(unit);
-		}
 		@Override
-		public int compareTo(UnitGroup that) {
-			return this.side.compareTo(that.side);
+		public int compareTo(TreeBuilder that) {
+			return this.name.compareTo(that.name);
+		}
+	}
+
+	public static class TreeNode extends DefaultMutableTreeNode {
+		private static final long serialVersionUID = 1L;
+		private Object value;
+		public TreeNode(Object value, String name) {
+			super(name);
+			this.value = value;
+		}
+		public Object getValue() {
+			return value;
 		}
 	}
 }
