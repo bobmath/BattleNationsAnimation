@@ -6,7 +6,6 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Frame {
 	private AffineTransform[] transforms;
