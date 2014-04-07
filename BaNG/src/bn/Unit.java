@@ -14,13 +14,10 @@ public class Unit implements Comparable<Unit> {
 
 	private static Map<String,Unit> units;
 
-	private String tag;
-	private String name;
-	private String side;
+	private String tag, name, side;
 	private String backAnimName, frontAnimName;
 
-	public static void load() throws IOException
-	{
+	public static void load() throws IOException {
 		units = new HashMap<String,Unit>();
 		try {
 			JsonObject json = (JsonObject) GameFiles.readJson("BattleUnits.json");
