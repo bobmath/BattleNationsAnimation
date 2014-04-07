@@ -14,7 +14,7 @@ public class Unit implements Comparable<Unit> {
 
 	private static Map<String,Unit> units;
 
-	private String tag, name, side;
+	private String tag, name, shortName, side;
 	private String backAnimName, frontAnimName;
 
 	public static void load() throws IOException {
@@ -57,6 +57,8 @@ public class Unit implements Comparable<Unit> {
 		if (name == null) name = tag;
 		if (name.startsWith("Speciment "))
 			name = "Specimen" + name.substring(9);
+		shortName = Text.get(json.getString("shortName"));
+		if (shortName == null) shortName = name;
 		side = json.getString("side");
 		backAnimName = json.getString("backIdleAnimation");
 		frontAnimName = json.getString("frontIdleAnimation");
@@ -68,6 +70,10 @@ public class Unit implements Comparable<Unit> {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getShortName() {
+		return shortName;
 	}
 
 	public String toString() {
