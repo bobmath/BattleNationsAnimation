@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -110,17 +111,17 @@ public class ImageGetter {
 		}
 
 		public void saveCurrentAsGif() {
-			JFileChooser fileChooser = new JFileChooser();
-			int userOption = fileChooser.showSaveDialog(this);
-			if (userOption == JFileChooser.APPROVE_OPTION) {
-				try {
-					writeGif(fileChooser.getSelectedFile());
-				}
-				catch (IOException e) {
-					JOptionPane.showMessageDialog(null,
-							"Error writing file.",
-							"Error", JOptionPane.ERROR_MESSAGE);
-				}
+			if (anim == null) return;
+			if (anim == null) return;
+			File file = selectOutputFile("Save as GIF");
+			if (file == null) return;
+			try {
+				writeGif(file);
+			}
+			catch (IOException e) {
+				JOptionPane.showMessageDialog(null,
+						"Error writing file.",
+						"Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 
@@ -148,8 +149,59 @@ public class ImageGetter {
 				anim.drawFrame(i, g);
 			}
 
+			file.delete();
 			out.write(file);
 		}
+
+		public File selectOutputFile(String title) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setDialogTitle(title);
+			int userOption = fileChooser.showSaveDialog(this);
+			if (userOption != JFileChooser.APPROVE_OPTION)
+				return null;
+			File file = fileChooser.getSelectedFile();
+			if (file.exists()) {
+				userOption = JOptionPane.showConfirmDialog(this,
+						file + "\nalready exists. Overwrite?",
+						"File Exists",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE);
+				if (userOption != JOptionPane.YES_OPTION)
+					return null;
+			}
+			return file;
+		}
+
+		public void saveCurrentAsPng() {
+			if (anim == null) return;
+			File file = selectOutputFile("Save as PNG");
+			if (file == null) return;
+			try {
+				writePng(file);
+			}
+			catch (IOException e) {
+				JOptionPane.showMessageDialog(null,
+						"Error writing file.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+
+		private void writePng(File file) throws IOException {
+			Rectangle2D bounds = anim.getBounds(0);
+			int width = (int) Math.ceil(bounds.getWidth());
+			int height = (int) Math.ceil(bounds.getHeight());
+			anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
+					(height - bounds.getHeight())/2 - bounds.getY());
+
+			BufferedImage frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = frame.createGraphics();
+			setHints(g);
+			anim.drawFrame(0, g);
+
+			file.delete();
+			ImageIO.write(frame, "png", file);
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -184,7 +236,8 @@ public class ImageGetter {
 
 		JMenuBar menuBar = new JMenuBar(); 
 		JMenu fileMenu = new JMenu("File");
-		JMenuItem exportGifItem = new JMenuItem("Export to Gif");
+		JMenuItem exportGifItem = new JMenuItem("Export to GIF");
+		JMenuItem exportPngItem = new JMenuItem("Export to PNG");
 
 		exportGifItem.addActionListener(new ActionListener () {
 			@Override
@@ -193,7 +246,15 @@ public class ImageGetter {
 			}
 		});
 
+		exportPngItem.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				img.saveCurrentAsPng();
+			}
+		});
+
 		fileMenu.add(exportGifItem);
+		fileMenu.add(exportPngItem);
 		menuBar.add(fileMenu);
 
 		JMenu viewMenu = new JMenu("View");
