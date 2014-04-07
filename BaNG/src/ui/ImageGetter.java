@@ -19,40 +19,36 @@ import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
 import javax.swing.Timer;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
 import util.GifAnimation;
 import bn.Animation;
+import bn.Building;
 import bn.GameFiles;
 import bn.Unit;
 
 public class ImageGetter {
 
-	public static class ImageBox extends JComponent
-	implements ListSelectionListener
-	{
+	public static class ImageBox extends JComponent {
 		private static final long serialVersionUID = 1L;
 
-		private JList<Unit> list;
+		private Object source;
 		private Animation anim;
-		private int size;
 		private Timer timer; 
 		protected int tick;
 		private boolean front;
 
-		public ImageBox(int size, JList<Unit> list) {
-			this.size = size;
-			this.list = list;
-			list.addListSelectionListener(this);
+		public ImageBox() {
+			this.front = true;
 			timer = new Timer(50, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -62,24 +58,27 @@ public class ImageGetter {
 			});
 		}
 
-		public Dimension getPreferredSize() {
-			return new Dimension(size, size);
+		public void setSource(Object source) {
+			if (this.source != source) {
+				this.source = source;
+				updateAnim();
+			}
 		}
 
 		public void setFront(boolean front) {
 			this.front = front;
-			valueChanged(null);
+			updateAnim();
 		}
 
 		public void paint(Graphics g) {
-			if (anim != null) {
-				Graphics2D g2 = (Graphics2D) g;
-				setHints(g2);
-				Rectangle2D bounds = anim.getBounds();
-				anim.setPosition((size - bounds.getWidth())/2 - bounds.getX(),
-						(size - bounds.getHeight())/2 - bounds.getY());
-				anim.drawFrame(tick % anim.getNumFrames(), g2);
-			}
+			if (anim == null) return;
+			Graphics2D g2 = (Graphics2D) g;
+			setHints(g2);
+			Dimension dim = getSize();
+			Rectangle2D bounds = anim.getBounds();
+			anim.setPosition((dim.width - bounds.getWidth())/2 - bounds.getX(),
+					(dim.height - bounds.getHeight())/2 - bounds.getY());
+			anim.drawFrame(tick % anim.getNumFrames(), g2);
 		}
 
 		private static void setHints(Graphics2D g2) {
@@ -87,26 +86,39 @@ public class ImageGetter {
 					RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		}
 
-		@Override
-		public void valueChanged(ListSelectionEvent ev) {
+		private void updateAnim() {
 			anim = null;
 			timer.stop();
 			tick = 0;
 
-			Unit unit = list.getSelectedValue();
-			if (unit != null) {
-				try {
+			try {
+				if (source == null) {
+					// ignore
+				}
+				else if (source instanceof Unit) {
+					Unit unit = (Unit) source;
 					anim = front ? unit.getFrontAnimation()
 							: unit.getBackAnimation();
-					timer.start();
 				}
-				catch (IOException ex) {
-					JOptionPane.showMessageDialog(null,
-							"Unable to load animation",
-							"Error", JOptionPane.ERROR_MESSAGE);
+				else if (source instanceof Building) {
+					Building bld = (Building) source;
+					if (front)
+						anim = bld.getBusyAnimation();
+					if (anim == null)
+						anim = bld.getIdleAnimation();
+				}
+				else if (source instanceof String) {
+					anim = Animation.get((String) source);
 				}
 			}
+			catch (IOException ex) {
+				JOptionPane.showMessageDialog(null,
+						"Unable to load animation",
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
 
+			if (anim != null)
+				timer.start();
 			repaint();
 		}
 
@@ -221,17 +233,30 @@ public class ImageGetter {
 			return;
 		}
 
-		JList<Unit> list = new JList<Unit>(Unit.getPlayer());
-		JScrollPane listScroller = new JScrollPane(list);
-		listScroller.setPreferredSize(new Dimension(300, 300));
+		final ImageBox img = new ImageBox();
+		img.setPreferredSize(new Dimension(300, 300));
 
-		final ImageBox img = new ImageBox(300, list);
+		final JTree tree = new JTree(AnimationTree.buildTree());
+		tree.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				AnimationTree.TreeNode node = (AnimationTree.TreeNode)
+						tree.getLastSelectedPathComponent();
+				if (node == null)
+					img.setSource(null);
+				else
+					img.setSource(node.getValue());
+			}
+		});
+
+		JScrollPane scroller = new JScrollPane(tree);
+		scroller.setPreferredSize(new Dimension(300, 300));
 
 		JFrame frame = new JFrame("ImageGetter");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container content = frame.getContentPane();
 		content.setLayout(new BoxLayout(content, BoxLayout.LINE_AXIS));
-		content.add(listScroller);
+		content.add(scroller);
 		content.add(img);
 
 		JMenuBar menuBar = new JMenuBar(); 
@@ -259,8 +284,8 @@ public class ImageGetter {
 
 		JMenu viewMenu = new JMenu("View");
 
-		JRadioButtonMenuItem viewFront = new JRadioButtonMenuItem("Front", false);
-		JRadioButtonMenuItem viewBack = new JRadioButtonMenuItem("Back", true);
+		JRadioButtonMenuItem viewFront = new JRadioButtonMenuItem("Front", true);
+		JRadioButtonMenuItem viewBack = new JRadioButtonMenuItem("Back", false);
 		viewFront.setActionCommand("true");
 		viewBack.setActionCommand("back");
 		ButtonGroup group = new ButtonGroup();

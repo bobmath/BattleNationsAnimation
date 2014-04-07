@@ -22,6 +22,7 @@ public class Timeline {
 	private double scale;
 
 	public static Timeline get(String name) throws IOException {
+		if (name == null) return null;
 		if (packageIndex == null) load();
 		String lc = name.toLowerCase();
 		if (!animCache.containsKey(lc)) {

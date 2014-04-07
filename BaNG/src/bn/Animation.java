@@ -13,7 +13,9 @@ public class Animation {
 	private double xPos, yPos, scale;
 
 	public static Animation get(String name) throws IOException {
-		return new Animation(Timeline.get(name));
+		Timeline tl = Timeline.get(name);
+		if (tl == null) return null;
+		return new Animation(tl);
 	}
 
 	public Animation(Timeline anim) throws IOException {
