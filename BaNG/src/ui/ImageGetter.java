@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -23,8 +24,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.event.TreeSelectionEvent;
@@ -263,10 +266,10 @@ public class ImageGetter {
 
 		JFrame frame = new JFrame("ImageGetter");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Container content = frame.getContentPane();
-		content.setLayout(new BoxLayout(content, BoxLayout.LINE_AXIS));
-		content.add(scroller);
-		content.add(img);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				scroller, img);
+		splitPane.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		frame.setContentPane(splitPane);
 
 		JMenuBar menuBar = new JMenuBar(); 
 		JMenu fileMenu = new JMenu("File");
