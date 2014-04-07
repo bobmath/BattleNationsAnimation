@@ -1,54 +1,39 @@
 package ui;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import bn.Building;
-import bn.GameFiles;
 import bn.Timeline;
 import bn.Unit;
 
 public class AnimationTree {
-	public static void main(String[] args) throws IOException {
-		GameFiles.load();
-
-		JFrame frame = new JFrame("Tree Test");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Container content = frame.getContentPane();
-		JTree tree = new JTree(buildTree());
-		JScrollPane scroller = new JScrollPane(tree);
-		scroller.setPreferredSize(new Dimension(300, 300));
-		content.add(scroller);
-		frame.pack();
-		frame.setVisible(true);
-	}
 
 	public static TreeNode buildTree() {
 		TreeBuilder builder = new TreeBuilder("Animations");
 		for (Building bld : Building.getAll()) {
+			if (!bld.hasAnimation()) continue;
 			String name = bld.getName();
 			if (name.startsWith("comp_"))
-				builder.add(bld, false, "Building", "comp", name);
+				builder.add(bld, false, "Buildings", "comp", name);
 			else if (name.startsWith("deco_"))
-				builder.add(bld, false, "Building", "deco", name);
+				builder.add(bld, false, "Buildings", "deco", name);
 			else if (name.startsWith("map_"))
-				builder.add(bld, false, "Building", "map", name);
+				builder.add(bld, false, "Buildings", "map", name);
 			else if (name.startsWith("terrain_"))
-				builder.add(bld, false, "Building", "terrain", name);
-			else
-				builder.add(bld, true, "Building", name, bld.getTag());
+				builder.add(bld, false, "Buildings", "terrain", name);
+			else {
+				String menu = bld.getBuildMenu();
+				if (menu == null) menu = "Other";
+				builder.add(bld, true, "Buildings", menu, name, bld.getTag());
+			}
 		}
 		for (Unit unit : Unit.getAll()) {
-			builder.add(unit, true, unit.getSide(), unit.getName(), unit.getTag());
+			builder.add(unit, true, unit.getSide() + " Units",
+					unit.getName(), unit.getTag());
 		}
 		for (String name : Timeline.getAllNames()) {
 			builder.add(name, false, "All", name.substring(0,1), name);
@@ -115,4 +100,5 @@ public class AnimationTree {
 			return value;
 		}
 	}
+
 }
