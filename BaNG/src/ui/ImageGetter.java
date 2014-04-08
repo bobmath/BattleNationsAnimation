@@ -2,17 +2,18 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -65,6 +66,10 @@ public class ImageGetter {
 
 	private JComboBox<String> busyCtrl;
 
+	private Container unitPanel;
+
+	private JPanel buildingPanel;
+
 	public void buildUI() {
 		frame = new JFrame("ImageGetter");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -78,10 +83,12 @@ public class ImageGetter {
 		});
 		JScrollPane scroller = new JScrollPane(tree);
 		scroller.setPreferredSize(new Dimension(300, 400));
+		scroller.setMinimumSize(new Dimension(100, 100));
 
 		rightPanel = new JPanel(new BorderLayout());
-		rightPanel.setPreferredSize(new Dimension(400, 400));
+		rightPanel.setPreferredSize(new Dimension(300, 400));
 		animBox = new AnimationBox();
+		animBox.setMinimumSize(new Dimension(100, 100));
 		rightPanel.add(animBox);
 
 		buildControls();
@@ -124,7 +131,38 @@ public class ImageGetter {
 	}
 
 	private void buildControls() {
-		JPanel controlPanel = new JPanel(new FlowLayout());
+		JPanel controlPanel = new JPanel();
+		controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
+
+		ActionListener update = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateAnimation();
+			}
+		};
+
+		unitPanel = new JPanel();
+		unitPanel.setLayout(new BoxLayout(unitPanel, BoxLayout.LINE_AXIS));
+		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
+		frontCtrl.addActionListener(update);
+		frontCtrl.setMaximumSize(frontCtrl.getPreferredSize());
+		unitPanel.add(frontCtrl);
+		unitPanel.add(Box.createHorizontalGlue());
+		unitPanel.setVisible(false);
+		controlPanel.add(unitPanel);
+
+		buildingPanel = new JPanel();
+		buildingPanel.setLayout(new BoxLayout(buildingPanel, BoxLayout.LINE_AXIS));
+		busyCtrl = new JComboBox<String>(new String[] { "Busy", "Idle" });
+		busyCtrl.addActionListener(update);
+		busyCtrl.setMaximumSize(busyCtrl.getPreferredSize());
+		buildingPanel.add(busyCtrl);
+		buildingPanel.add(Box.createHorizontalGlue());
+		buildingPanel.setVisible(false);
+		controlPanel.add(buildingPanel);
+
+		JPanel animPanel = new JPanel();
+		animPanel.setLayout(new BoxLayout(animPanel, BoxLayout.LINE_AXIS));
 		final JComboBox<BackgroundItem> backgroundCtrl =
 				new JComboBox<BackgroundItem>(backgrounds);
 		backgroundCtrl.addActionListener(new ActionListener() {
@@ -134,7 +172,8 @@ public class ImageGetter {
 				animBox.setBackgroundColor(bkg.getColor());
 			}
 		});
-		controlPanel.add(backgroundCtrl);
+		backgroundCtrl.setMaximumSize(backgroundCtrl.getPreferredSize());
+		animPanel.add(backgroundCtrl);
 
 		final JPopupMenu exportPopup = new JPopupMenu();
 
@@ -163,24 +202,9 @@ public class ImageGetter {
 				exportPopup.show(exportBtn, 0, 0);
 			}
 		});
-		controlPanel.add(exportBtn);
-
-		ActionListener update = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateAnimation();
-			}
-		};
-
-		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
-		frontCtrl.addActionListener(update);
-		frontCtrl.setVisible(false);
-		controlPanel.add(frontCtrl);
-
-		busyCtrl = new JComboBox<String>(new String[] { "Busy", "Idle" });
-		busyCtrl.addActionListener(update);
-		busyCtrl.setVisible(false);
-		controlPanel.add(busyCtrl);
+		animPanel.add(Box.createHorizontalGlue());
+		animPanel.add(exportBtn);
+		controlPanel.add(animPanel);
 
 		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
 	}
@@ -198,8 +222,8 @@ public class ImageGetter {
 
 	private void updateControls() {
 		if (source instanceof Unit) {
-			showUnitControls(true);
-			showBuildingControls(false);
+			unitPanel.setVisible(true);
+			buildingPanel.setVisible(false);
 			switch (((Unit) source).getSide()) {
 			case "Player": case "Hero":
 				frontCtrl.setSelectedItem("Back");
@@ -210,22 +234,14 @@ public class ImageGetter {
 			}
 		}
 		else if (source instanceof Building) {
-			showUnitControls(false);
-			showBuildingControls(true);
+			unitPanel.setVisible(false);
+			buildingPanel.setVisible(true);
 		}
 		else {
-			showUnitControls(false);
-			showBuildingControls(false);
+			unitPanel.setVisible(false);
+			buildingPanel.setVisible(false);
 		}
 		rightPanel.revalidate();
-	}
-
-	private void showUnitControls(boolean visible) {
-		frontCtrl.setVisible(visible);
-	}
-
-	private void showBuildingControls(boolean visible) {
-		busyCtrl.setVisible(visible);
 	}
 
 	private void updateAnimation() {
