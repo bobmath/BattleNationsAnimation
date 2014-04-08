@@ -45,7 +45,6 @@ public class ImageGetter {
 		private static final long serialVersionUID = 1L;
 
 		private Object source;
-		private String name;
 		private Animation anim;
 		private Timer timer; 
 		protected int tick;
@@ -101,21 +100,18 @@ public class ImageGetter {
 				}
 				else if (source instanceof Unit) {
 					Unit unit = (Unit) source;
-					name = unit.getShortName();
 					anim = front ? unit.getFrontAnimation()
 							: unit.getBackAnimation();
 				}
 				else if (source instanceof Building) {
 					Building bld = (Building) source;
-					name = bld.getName();
 					if (front)
 						anim = bld.getBusyAnimation();
 					if (anim == null)
 						anim = bld.getIdleAnimation();
 				}
 				else if (source instanceof String) {
-					name = (String) source;
-					anim = Animation.get(name);
+					anim = Animation.get((String) source);
 				}
 			}
 			catch (IOException ex) {
@@ -174,11 +170,7 @@ public class ImageGetter {
 
 		public File selectOutputFile(String title, String ext) {
 			JFileChooser fileChooser = new JFileChooser();
-			if (name != null) {
-				String filename = name.replaceAll("\\W+", "");
-				if (filename.length() > 0)
-					fileChooser.setSelectedFile(new File(filename + ext));
-			}
+			fileChooser.setSelectedFile(new File(anim.getName() + ext));
 			fileChooser.setDialogTitle(title);
 			int userOption = fileChooser.showSaveDialog(this);
 			if (userOption != JFileChooser.APPROVE_OPTION)

@@ -24,6 +24,10 @@ public class Animation {
 		scale = anim.getScale();
 	}
 
+	public String getName() {
+		return anim.getName();
+	}
+
 	public Timeline getTimeline() {
 		return anim;
 	}
