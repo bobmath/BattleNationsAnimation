@@ -1,6 +1,7 @@
 package ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -11,8 +12,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -75,13 +79,12 @@ public class ImageGetter {
 		JScrollPane scroller = new JScrollPane(tree);
 		scroller.setPreferredSize(new Dimension(300, 400));
 
-		animBox = new AnimationBox();
-		JPanel controlPanel = buildControls();
-
 		rightPanel = new JPanel(new BorderLayout());
-		rightPanel.setPreferredSize(new Dimension(300, 400));
-		rightPanel.add(animBox, BorderLayout.CENTER);
-		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
+		rightPanel.setPreferredSize(new Dimension(400, 400));
+		animBox = new AnimationBox();
+		rightPanel.add(animBox);
+
+		buildControls();
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				scroller, rightPanel);
@@ -91,26 +94,76 @@ public class ImageGetter {
 		frame.pack();
 	}
 
-	private JPanel buildControls() {
-		JPanel controlPanel = new JPanel(new FlowLayout());
+	private static BackgroundItem[] backgrounds = new BackgroundItem[] {
+		new BackgroundItem("Background", -1, -1, -1),
+		new BackgroundItem("Black", 0, 0, 0),
+		new BackgroundItem("Critter", 0xdd, 0xcc, 0xaa),
+		new BackgroundItem("Dirt", 0xc1, 0x9a, 0x6b),
+		new BackgroundItem("Frontier", 0xeb, 0x81, 0x00),
+		new BackgroundItem("Player", 0xeb, 0x81, 0x00),
+		new BackgroundItem("Raider", 0xbb, 0x99, 0x66),
+		new BackgroundItem("Rebel", 0xcc, 0xcc, 0xcc),
+		new BackgroundItem("Silver Wolf", 0xcc, 0xcc, 0xcc),
+		new BackgroundItem("Sky", 0x87, 0xce, 0xfa),
+		new BackgroundItem("White", 0xff, 0xff, 0xff),
+	};
+	private static class BackgroundItem {
+		private String name;
+		private Color color;
+		protected BackgroundItem(String name, int r, int g, int b) {
+			this.name = name;
+			if (r >= 0)
+				this.color = new Color(r, g, b);
+		}
+		protected Color getColor() {
+			return color;
+		}
+		public String toString() {
+			return name;
+		}
+	}
 
-		JButton exportGif = new JButton("Export Animation");
+	private void buildControls() {
+		JPanel controlPanel = new JPanel(new FlowLayout());
+		final JComboBox<BackgroundItem> backgroundCtrl =
+				new JComboBox<BackgroundItem>(backgrounds);
+		backgroundCtrl.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				BackgroundItem bkg = (BackgroundItem) backgroundCtrl.getSelectedItem();
+				animBox.setBackgroundColor(bkg.getColor());
+			}
+		});
+		controlPanel.add(backgroundCtrl);
+
+		final JPopupMenu exportPopup = new JPopupMenu();
+
+		JMenuItem exportGif = new JMenuItem("Export Animation");
 		exportGif.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				animBox.saveCurrentAsGif();
 			}
 		});
-		controlPanel.add(exportGif);
+		exportPopup.add(exportGif);
 
-		JButton exportPng = new JButton("Export Image");
+		JMenuItem exportPng = new JMenuItem("Export Image");
 		exportPng.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				animBox.saveCurrentAsPng();
 			}
 		});
-		controlPanel.add(exportPng);
+		exportPopup.add(exportPng);
+
+		final JButton exportBtn = new JButton("Export");
+		exportBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				exportPopup.show(exportBtn, 0, 0);
+			}
+		});
+		controlPanel.add(exportBtn);
 
 		ActionListener update = new ActionListener() {
 			@Override
@@ -129,17 +182,18 @@ public class ImageGetter {
 		busyCtrl.setVisible(false);
 		controlPanel.add(busyCtrl);
 
-		return controlPanel;
+		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
 	}
 
 	private void updateSource() {
 		AnimationTree.TreeNode node = (AnimationTree.TreeNode)
 				tree.getLastSelectedPathComponent();
-		Object src = node.getValue();
-		if (src == source) return;
-		source = src;
-		updateControls();
-		updateAnimation();
+		Object src = (node == null) ? null : node.getValue();
+		if (src != source) {
+			source = src;
+			updateControls();
+			updateAnimation();
+		}
 	}
 
 	private void updateControls() {

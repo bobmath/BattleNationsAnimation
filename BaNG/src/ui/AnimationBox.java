@@ -24,10 +24,12 @@ import bn.Animation;
 
 public class AnimationBox extends JComponent {
 	private static final long serialVersionUID = 1L;
+	private static final Color defaultColor = new Color(0xf2, 0xf2, 0xf2); // wiki light gray
 
 	private Animation anim;
 	private Timer timer;
 	protected int tick;
+	private Color backgroundColor;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -102,10 +104,24 @@ public class AnimationBox extends JComponent {
 		}
 	}
 
+	public void saveCurrentAsPng() {
+		if (anim == null) return;
+		File file = selectOutputFile("png");
+		if (file == null) return;
+		try {
+			writePng(file);
+		}
+		catch (IOException e) {
+			JOptionPane.showMessageDialog(null,
+					"Error writing file.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
 	public void writeGif(File file) throws IOException {
 		Rectangle2D bounds = anim.getBounds();
-		int width = (int) Math.ceil(bounds.getWidth());
-		int height = (int) Math.ceil(bounds.getHeight());
+		int width = (int) Math.ceil(bounds.getWidth()) + 2;
+		int height = (int) Math.ceil(bounds.getHeight()) + 2;
 		anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
 				(height - bounds.getHeight())/2 - bounds.getY());
 		int frames = anim.getNumFrames();
@@ -113,7 +129,9 @@ public class AnimationBox extends JComponent {
 
 		BufferedImage frame = out.getFrame(0);
 		Graphics2D g = frame.createGraphics();
-		g.setColor(new Color(242, 242, 242)); // wiki light gray
+		Color bg = backgroundColor;
+		if (bg == null) bg = defaultColor;
+		g.setColor(bg);
 		g.fillRect(0, 0, width, height);
 		out.copyBackground();
 		setHints(g);
@@ -130,24 +148,10 @@ public class AnimationBox extends JComponent {
 		out.write(file);
 	}
 
-	public void saveCurrentAsPng() {
-		if (anim == null) return;
-		File file = selectOutputFile("png");
-		if (file == null) return;
-		try {
-			writePng(file);
-		}
-		catch (IOException e) {
-			JOptionPane.showMessageDialog(null,
-					"Error writing file.",
-					"Error", JOptionPane.ERROR_MESSAGE);
-		}
-	}
-
 	private void writePng(File file) throws IOException {
 		Rectangle2D bounds = anim.getBounds(0);
-		int width = (int) Math.ceil(bounds.getWidth());
-		int height = (int) Math.ceil(bounds.getHeight());
+		int width = (int) Math.ceil(bounds.getWidth()) + 2;
+		int height = (int) Math.ceil(bounds.getHeight()) + 2;
 		anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
 				(height - bounds.getHeight())/2 - bounds.getY());
 
@@ -158,6 +162,17 @@ public class AnimationBox extends JComponent {
 
 		file.delete();
 		ImageIO.write(frame, "png", file);
+	}
+
+	public void setBackgroundColor(Color color) {
+		backgroundColor = color;
+		if (color == null)
+			setOpaque(false);
+		else {
+			setOpaque(true);
+			setBackground(color);
+		}
+		repaint();
 	}
 
 }
