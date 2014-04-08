@@ -1,224 +1,30 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Container;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.Timer;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
-import util.GifAnimation;
 import bn.Animation;
 import bn.Building;
 import bn.GameFiles;
 import bn.Unit;
 
 public class ImageGetter {
-
-	public static class ImageBox extends JComponent {
-		private static final long serialVersionUID = 1L;
-
-		private Object source;
-		private Animation anim;
-		private Timer timer; 
-		protected int tick;
-		private boolean front;
-
-		public ImageBox() {
-			this.front = true;
-			timer = new Timer(50, new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					tick++;
-					repaint();
-				}
-			});
-		}
-
-		public void setSource(Object source) {
-			if (this.source != source) {
-				this.source = source;
-				updateAnim();
-			}
-		}
-
-		public void setFront(boolean front) {
-			this.front = front;
-			updateAnim();
-		}
-
-		public void paint(Graphics g) {
-			if (anim == null) return;
-			Graphics2D g2 = (Graphics2D) g;
-			setHints(g2);
-			Dimension dim = getSize();
-			Rectangle2D bounds = anim.getBounds();
-			anim.setPosition((dim.width - bounds.getWidth())/2 - bounds.getX(),
-					(dim.height - bounds.getHeight())/2 - bounds.getY());
-			anim.drawFrame(tick % anim.getNumFrames(), g2);
-		}
-
-		private static void setHints(Graphics2D g2) {
-			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-					RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		}
-
-		private void updateAnim() {
-			anim = null;
-			timer.stop();
-			tick = 0;
-
-			try {
-				if (source == null) {
-					// ignore
-				}
-				else if (source instanceof Unit) {
-					Unit unit = (Unit) source;
-					anim = front ? unit.getFrontAnimation()
-							: unit.getBackAnimation();
-				}
-				else if (source instanceof Building) {
-					Building bld = (Building) source;
-					if (front)
-						anim = bld.getBusyAnimation();
-					if (anim == null)
-						anim = bld.getIdleAnimation();
-				}
-				else if (source instanceof String) {
-					anim = Animation.get((String) source);
-				}
-			}
-			catch (IOException ex) {
-				JOptionPane.showMessageDialog(null,
-						"Unable to load animation",
-						"Error", JOptionPane.ERROR_MESSAGE);
-			}
-
-			if (anim != null)
-				timer.start();
-			repaint();
-		}
-
-		public void saveCurrentAsGif() {
-			if (anim == null) return;
-			if (anim == null) return;
-			File file = selectOutputFile("Save as GIF", ".gif");
-			if (file == null) return;
-			try {
-				writeGif(file);
-			}
-			catch (IOException e) {
-				JOptionPane.showMessageDialog(null,
-						"Error writing file.",
-						"Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-
-		public void writeGif(File file) throws IOException {
-			Rectangle2D bounds = anim.getBounds();
-			int width = (int) Math.ceil(bounds.getWidth());
-			int height = (int) Math.ceil(bounds.getHeight());
-			anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
-					(height - bounds.getHeight())/2 - bounds.getY());
-			int frames = anim.getNumFrames();
-			GifAnimation out = new GifAnimation(width, height, frames, 5);
-
-			BufferedImage frame = out.getFrame(0);
-			Graphics2D g = frame.createGraphics();
-			g.setColor(new Color(242, 242, 242)); // wiki light gray
-			g.fillRect(0, 0, width, height);
-			out.copyBackground();
-			setHints(g);
-			anim.drawFrame(0, g);
-
-			for (int i = 1; i < frames; i++) {
-				frame = out.getFrame(i);
-				g = frame.createGraphics();
-				setHints(g);
-				anim.drawFrame(i, g);
-			}
-
-			file.delete();
-			out.write(file);
-		}
-
-		public File selectOutputFile(String title, String ext) {
-			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setSelectedFile(new File(anim.getName() + ext));
-			fileChooser.setDialogTitle(title);
-			int userOption = fileChooser.showSaveDialog(this);
-			if (userOption != JFileChooser.APPROVE_OPTION)
-				return null;
-			File file = fileChooser.getSelectedFile();
-			if (file.exists()) {
-				userOption = JOptionPane.showConfirmDialog(this,
-						file + "\nalready exists. Overwrite?",
-						"File Exists",
-						JOptionPane.YES_NO_OPTION,
-						JOptionPane.WARNING_MESSAGE);
-				if (userOption != JOptionPane.YES_OPTION)
-					return null;
-			}
-			return file;
-		}
-
-		public void saveCurrentAsPng() {
-			if (anim == null) return;
-			File file = selectOutputFile("Save as PNG", ".png");
-			if (file == null) return;
-			try {
-				writePng(file);
-			}
-			catch (IOException e) {
-				JOptionPane.showMessageDialog(null,
-						"Error writing file.",
-						"Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-
-		private void writePng(File file) throws IOException {
-			Rectangle2D bounds = anim.getBounds(0);
-			int width = (int) Math.ceil(bounds.getWidth());
-			int height = (int) Math.ceil(bounds.getHeight());
-			anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
-					(height - bounds.getHeight())/2 - bounds.getY());
-
-			BufferedImage frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = frame.createGraphics();
-			setHints(g);
-			anim.drawFrame(0, g);
-
-			file.delete();
-			ImageIO.write(frame, "png", file);
-		}
-
-	}
 
 	public static void main(String[] args) {
 		if (!GameFiles.init()) {
@@ -236,82 +42,168 @@ public class ImageGetter {
 					"Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		ImageGetter ui = new ImageGetter();
+		ui.buildUI();
+		ui.showUI();
+	}
 
-		final ImageBox img = new ImageBox();
-		img.setPreferredSize(new Dimension(300, 300));
+	public ImageGetter() {
+	}
 
-		final JTree tree = new JTree(AnimationTree.buildTree());
+	private Object source;
+
+	private JFrame frame;
+	private AnimationBox animBox;
+	private JTree tree;
+	private JPanel rightPanel;
+
+	private JComboBox<String> frontCtrl;
+
+	private JComboBox<String> busyCtrl;
+
+	public void buildUI() {
+		frame = new JFrame("ImageGetter");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		tree = new JTree(AnimationTree.buildTree());
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				AnimationTree.TreeNode node = (AnimationTree.TreeNode)
-						tree.getLastSelectedPathComponent();
-				if (node == null)
-					img.setSource(null);
-				else
-					img.setSource(node.getValue());
+				updateSource();
 			}
 		});
-
 		JScrollPane scroller = new JScrollPane(tree);
-		scroller.setPreferredSize(new Dimension(300, 300));
+		scroller.setPreferredSize(new Dimension(300, 400));
 
-		JFrame frame = new JFrame("ImageGetter");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		animBox = new AnimationBox();
+		JPanel controlPanel = buildControls();
+
+		rightPanel = new JPanel(new BorderLayout());
+		rightPanel.setPreferredSize(new Dimension(300, 400));
+		rightPanel.add(animBox, BorderLayout.CENTER);
+		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
+
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				scroller, img);
+				scroller, rightPanel);
 		splitPane.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		frame.setContentPane(splitPane);
 
-		JMenuBar menuBar = new JMenuBar(); 
-		JMenu fileMenu = new JMenu("File");
-		JMenuItem exportGifItem = new JMenuItem("Export to GIF");
-		JMenuItem exportPngItem = new JMenuItem("Export to PNG");
+		frame.pack();
+	}
 
-		exportGifItem.addActionListener(new ActionListener () {
+	private JPanel buildControls() {
+		JPanel controlPanel = new JPanel(new FlowLayout());
+
+		JButton exportGif = new JButton("Export Animation");
+		exportGif.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				img.saveCurrentAsGif();
+				animBox.saveCurrentAsGif();
 			}
 		});
+		controlPanel.add(exportGif);
 
-		exportPngItem.addActionListener(new ActionListener () {
+		JButton exportPng = new JButton("Export Image");
+		exportPng.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				img.saveCurrentAsPng();
+				animBox.saveCurrentAsPng();
 			}
 		});
+		controlPanel.add(exportPng);
 
-		fileMenu.add(exportGifItem);
-		fileMenu.add(exportPngItem);
-		menuBar.add(fileMenu);
-
-		JMenu viewMenu = new JMenu("View");
-
-		JRadioButtonMenuItem viewFront = new JRadioButtonMenuItem("Front", true);
-		JRadioButtonMenuItem viewBack = new JRadioButtonMenuItem("Back", false);
-		viewFront.setActionCommand("true");
-		viewBack.setActionCommand("back");
-		ButtonGroup group = new ButtonGroup();
-		group.add(viewFront);
-		group.add(viewBack);
-
-		ActionListener switchView = new ActionListener() {
+		ActionListener update = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				img.setFront(Boolean.parseBoolean(e.getActionCommand()));
+				updateAnimation();
 			}
 		};
-		viewFront.addActionListener(switchView);
-		viewBack.addActionListener(switchView);
 
-		viewMenu.add(viewFront);
-		viewMenu.add(viewBack);
+		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
+		frontCtrl.addActionListener(update);
+		frontCtrl.setVisible(false);
+		controlPanel.add(frontCtrl);
 
-		menuBar.add(viewMenu);
-		frame.setJMenuBar(menuBar);
+		busyCtrl = new JComboBox<String>(new String[] { "Busy", "Idle" });
+		busyCtrl.addActionListener(update);
+		busyCtrl.setVisible(false);
+		controlPanel.add(busyCtrl);
 
-		frame.pack();
+		return controlPanel;
+	}
+
+	private void updateSource() {
+		AnimationTree.TreeNode node = (AnimationTree.TreeNode)
+				tree.getLastSelectedPathComponent();
+		Object src = node.getValue();
+		if (src == source) return;
+		source = src;
+		updateControls();
+		updateAnimation();
+	}
+
+	private void updateControls() {
+		if (source instanceof Unit) {
+			showUnitControls(true);
+			showBuildingControls(false);
+			switch (((Unit) source).getSide()) {
+			case "Player": case "Hero":
+				frontCtrl.setSelectedItem("Back");
+				break;
+			case "Hostile": case "Villain":
+				frontCtrl.setSelectedItem("Front");
+				break;
+			}
+		}
+		else if (source instanceof Building) {
+			showUnitControls(false);
+			showBuildingControls(true);
+		}
+		else {
+			showUnitControls(false);
+			showBuildingControls(false);
+		}
+		rightPanel.revalidate();
+	}
+
+	private void showUnitControls(boolean visible) {
+		frontCtrl.setVisible(visible);
+	}
+
+	private void showBuildingControls(boolean visible) {
+		busyCtrl.setVisible(visible);
+	}
+
+	private void updateAnimation() {
+		Animation anim = null;
+		try {
+			if (source instanceof Unit) {
+				Unit unit = (Unit) source;
+				boolean front = "Front".equals(frontCtrl.getSelectedItem());
+				anim = front ? unit.getFrontAnimation()
+						: unit.getBackAnimation();
+			}
+			else if (source instanceof Building) {
+				Building bld = (Building) source;
+				boolean busy = "Busy".equals(busyCtrl.getSelectedItem());
+				if (busy)
+					anim = bld.getBusyAnimation();
+				if (anim == null)
+					anim = bld.getIdleAnimation();
+			}
+			else if (source instanceof String) {
+				anim = Animation.get((String) source);
+			}
+		}
+		catch (IOException e) {
+			JOptionPane.showMessageDialog(null,
+					"Unable to load animation",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
+		animBox.setAnimation(anim);
+	}
+
+	public void showUI() {
 		frame.setVisible(true);
 	}
 
