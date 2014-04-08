@@ -70,7 +70,7 @@ public class Bitmap {
 				readRaw(im, in);
 			else
 				readRLE(im, in);
-			texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x7fff, 0x7fff));
+			texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x8000, 0x8000));
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
 			throw new FileFormatException("Invalid array index", e);
