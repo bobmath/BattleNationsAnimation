@@ -126,26 +126,28 @@ public class Timeline {
 
 	private void readFrames(LittleEndianInputStream in, int ver)
 			throws IOException {
-		int numCoords = in.readShort() * 4;
-		int extra = 0;
+		int numPoints = in.readShort();
+		int alpha = 0;
 		if (ver == 8) {
 			switch (in.readShort()) {
 			case 0: break;
-			case 1: extra = 4; break;
-			case 0x101: extra = 16; break;
+			case 1: alpha = 1; break;
+			case 0x101: alpha = 4; break;
 			default: throw new FileFormatException("Unknown point size");
 			}
 		}
 
-		int[] coords = new int[numCoords];
-		for (int i = 0; i < numCoords; i += 4) {
-			coords[i] = in.readShort();
-			coords[i+1] = in.readShort();
+		Vertex[] coords = new Vertex[numPoints];
+		for (int i = 0; i < numPoints; i++) {
+			Vertex point = new Vertex();
+			point.x1 = in.readShort();
+			point.y1 = in.readShort();
 			if (ver == 4) in.readShort();
-			coords[i+2] = in.readShort();
-			coords[i+3] = in.readShort();
-			for (int j = 0; j < extra; j++)
-				in.readByte();
+			point.x2 = in.readShort();
+			point.y2 = in.readShort();
+			for (int j = 0; j < alpha; j++)
+				point.alpha = Math.min(point.alpha, in.readFloat());
+			coords[i] = point;
 		}
 
 		xMin = in.readShort();
@@ -171,6 +173,11 @@ public class Timeline {
 		for (int i = 0; i < numSeq; i++)
 			sequence[i] = frames[in.readShort()];
 		frames = sequence;
+	}
+
+	protected class Vertex {
+		protected int x1, y1, x2, y2;
+		protected float alpha = 1;
 	}
 
 }

@@ -55,8 +55,7 @@ public class Bitmap {
 		return texture;
 	}
 
-	private void read() throws IOException
-	{
+	private void read() throws IOException {
 		LittleEndianInputStream in = new LittleEndianInputStream(
 				GameFiles.open(name + "_0.z2raw"));
 		try {
@@ -81,15 +80,15 @@ public class Bitmap {
 		}
 	}
 
-	private void readRaw(BufferedImage im, LittleEndianInputStream in) throws IOException
-	{
+	private void readRaw(BufferedImage im, LittleEndianInputStream in)
+			throws IOException {
 		for (int y = 0; y < height; y++)
 			for (int x = 0; x < width; x++)
 				im.setRGB(x, y, readPix(in));
 	}
 
-	private void readRLE(BufferedImage im, LittleEndianInputStream in) throws IOException
-	{
+	private void readRLE(BufferedImage im, LittleEndianInputStream in)
+			throws IOException {
 		in.readInt(); // length
 		int palSize = in.readInt();
 		if (palSize < 1 || palSize > 256)
@@ -119,8 +118,7 @@ public class Bitmap {
 		}
 	}
 
-	private int readPix(LittleEndianInputStream in) throws IOException
-	{
+	private int readPix(LittleEndianInputStream in) throws IOException {
 		int r, g, b, a;
 		if (bits == 4) {
 			int p = in.readByte();

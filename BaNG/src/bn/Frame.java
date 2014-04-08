@@ -1,5 +1,7 @@
 package bn;
 
+import java.awt.AlphaComposite;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -10,6 +12,7 @@ import java.io.IOException;
 public class Frame {
 	private AffineTransform[] transforms;
 	private Polygon[] polys;
+	private AlphaComposite[] alpha;
 	private int xMin, xMax, yMin, yMax;
 
 	protected Frame() {
@@ -21,22 +24,34 @@ public class Frame {
 
 	public void draw(Graphics2D g) {
 		AffineTransform oldTrans = g.getTransform();
-		for (int i = 0; i < polys.length; i++) {
-			g.transform(transforms[i]);
-			g.fillPolygon(polys[i]);
-			g.setTransform(oldTrans);
+		if (alpha == null) {
+			for (int i = 0; i < polys.length; i++) {
+				g.transform(transforms[i]);
+				g.fillPolygon(polys[i]);
+				g.setTransform(oldTrans);
+			}
+		}
+		else {
+			Composite oldComp = g.getComposite();
+			for (int i = 0; i < polys.length; i++) {
+				g.transform(transforms[i]);
+				g.setComposite(alpha[i]);
+				g.fillPolygon(polys[i]);
+				g.setTransform(oldTrans);
+			}
+			g.setComposite(oldComp);
 		}
 	}
 
-	protected void read(LittleEndianInputStream in, int ver, int[] coords)
-			throws IOException
-			{
+	protected void read(LittleEndianInputStream in, int ver,
+			Timeline.Vertex[] coords) throws IOException {
 		int numPts = in.readShort();
 		if (numPts < 0 || numPts % 6 != 0)
 			throw new FileFormatException("Unexpected frame size");
 		int numPolys = numPts / 6;
 		polys = new Polygon[numPolys];
 		transforms = new AffineTransform[numPolys];
+		alpha = new AlphaComposite[numPolys];
 		if (ver > 4) in.readByte();
 		if (numPolys == 0) return;
 
@@ -45,6 +60,7 @@ public class Frame {
 		yMin = Integer.MAX_VALUE;
 		yMax = Integer.MIN_VALUE;
 
+		boolean hasAlpha = false;
 		int[] p = new int[6];
 		int[] x = new int[4];
 		int[] y = new int[4];
@@ -53,27 +69,25 @@ public class Frame {
 				p[j] = in.readShort();
 			if (p[3] != p[0] || p[4] != p[2])
 				throw new FileFormatException("Unexpected frame arrangement");
-			int p0 = p[0] * 4;
-			int p1 = p[1] * 4;
-			int p2 = p[2] * 4;
-			int p3 = p[5] * 4;
+			Timeline.Vertex p0 = coords[p[0]], p1 = coords[p[1]],
+					p2 = coords[p[2]], p3 = coords[p[5]];
 
-			int x0 = coords[p0];
-			int y0 = coords[p0+1];
-			stretchBounds(x0, y0);
-			stretchBounds(coords[p1], coords[p1+1]);
-			stretchBounds(coords[p2], coords[p2+1]);
-			stretchBounds(coords[p3], coords[p3+1]);
+			if (p0.alpha != 1) hasAlpha = true;
+			alpha[i] = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, p0.alpha);
+
+			stretchBounds(p0.x1, p0.y1);
+			stretchBounds(p1.x1, p1.y1);
+			stretchBounds(p2.x1, p2.y1);
+			stretchBounds(p3.x1, p3.y1);
+
 			AffineTransform t = new AffineTransform(
-					coords[p1] - x0, coords[p1+1] - y0,
-					coords[p2] - x0, coords[p2+1] - y0,
-					x0, y0);
-			x0 = coords[p0+2];
-			y0 = coords[p0+3];
+					p1.x1 - p0.x1, p1.y1 - p0.y1,
+					p2.x1 - p0.x1, p2.y1 - p0.y1,
+					p0.x1, p0.y1);
 			AffineTransform t2 = new AffineTransform(
-					coords[p1+2] - x0, coords[p1+3] - y0,
-					coords[p2+2] - x0, coords[p2+3] - y0,
-					x0, y0);
+					p1.x2 - p0.x2, p1.y2 - p0.y2,
+					p2.x2 - p0.x2, p2.y2 - p0.y2,
+					p0.x2, p0.y2);
 			try {
 				t.concatenate(t2.createInverse());
 			}
@@ -82,16 +96,15 @@ public class Frame {
 			}
 			transforms[i] = t;
 
-			x[0] = coords[p0+2];  y[0] = coords[p0+3];
-			x[1] = coords[p1+2];  y[1] = coords[p1+3];
-			x[2] = coords[p2+2];  y[2] = coords[p2+3];
-			x[3] = coords[p3+2];  y[3] = coords[p3+3];
-			for (int j = 0; j < 4; j++) {
-				x0 = x[j];
-				y0 = y[j];
-			}
+			x[0] = p0.x2;  y[0] = p0.y2;
+			x[1] = p1.x2;  y[1] = p1.y2;
+			x[2] = p2.x2;  y[2] = p2.y2;
+			x[3] = p3.x2;  y[3] = p3.y2;
 			polys[i] = new Polygon(x, y, 4);
 		}
+
+		if (!hasAlpha)
+			alpha = null;
 	} // read
 
 	private void stretchBounds(int x, int y) {

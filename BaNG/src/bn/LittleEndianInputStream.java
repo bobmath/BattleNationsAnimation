@@ -19,30 +19,30 @@ public class LittleEndianInputStream extends BufferedInputStream {
 		buf = new byte[len];
 	}
 
-	public int readByte() throws IOException
-	{
+	public int readByte() throws IOException {
 		int c = read();
 		if (c < 0) throw new EOFException();
 		return c;
 	}
 
-	public int readShort() throws IOException
-	{
+	public int readShort() throws IOException {
 		if (read(buf, 0, 2) != 2)
 			throw new EOFException();
 		return ((buf[0] & 0xff) | (buf[1] << 8));
 	}
 
-	public int readInt() throws IOException
-	{
+	public int readInt() throws IOException {
 		if (read(buf, 0, 4) != 4)
 			throw new EOFException();
 		return (buf[0] & 0xff) | ((buf[1] & 0xff) << 8)
 				| ((buf[2] & 0xff) << 16) | (buf[3] << 24);
 	}
 
-	public String readCString(int len) throws IOException
-	{
+	public float readFloat() throws IOException {
+		return Float.intBitsToFloat(readInt());
+	}
+
+	public String readCString(int len) throws IOException {
 		if (len > buf.length)
 			buf = new byte[len];
 		if (read(buf, 0, len) != len)
