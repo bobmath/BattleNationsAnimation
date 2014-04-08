@@ -155,8 +155,14 @@ public class AnimationBox extends JComponent {
 		anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
 				(height - bounds.getHeight())/2 - bounds.getY());
 
-		BufferedImage frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage frame = new BufferedImage(width, height,
+				backgroundColor == null ? BufferedImage.TYPE_INT_ARGB
+						: BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = frame.createGraphics();
+		if (backgroundColor != null) {
+			g.setColor(backgroundColor);
+			g.fillRect(0, 0, width, height);
+		}
 		setHints(g);
 		anim.drawFrame(0, g);
 
