@@ -36,7 +36,7 @@ public class AnimationTree {
 					unit.getName(), unit.getTag());
 		}
 		for (String name : Timeline.getAllNames()) {
-			builder.add(name, false, "All", name.substring(0,1), name);
+			builder.add(name, false, "all", name.substring(0,1), name);
 		}
 		return builder.getTree();
 	}
