@@ -5,17 +5,22 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Bitmap {
 
 	private static Map<String,SoftReference<Bitmap>> cache =
 			new HashMap<String,SoftReference<Bitmap>>();
+	private static Set<Bitmap> modified = new HashSet<Bitmap>();
 
 	private String name;
 	private int width, height, bits;
-	private TexturePaint texture;
+	private TexturePaint texture, originalTexture;
 
 	public static Bitmap get(String name) throws IOException {
 		String lc = name.toLowerCase();
@@ -53,6 +58,21 @@ public class Bitmap {
 
 	public TexturePaint getTexture() {
 		return texture;
+	}
+
+	public void replaceTexture(BufferedImage im) {
+		if (originalTexture == null) {
+			originalTexture = texture;
+			modified.add(this);
+		}
+		texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x8000, 0x8000));
+	}
+
+	public void restoreTexture() {
+		if (originalTexture == null) return;
+		texture = originalTexture;
+		originalTexture = null;
+		modified.remove(this);
 	}
 
 	private void read() throws IOException {

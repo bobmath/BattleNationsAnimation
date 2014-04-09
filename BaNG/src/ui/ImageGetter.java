@@ -170,15 +170,6 @@ public class ImageGetter {
 		});
 		exportPopup.add(exportPng);
 
-		JMenuItem exportRaw = new JMenuItem("Export Raw Bitmap");
-		exportRaw.addActionListener(new ActionListener () {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				animBox.saveCurrentRawBitmap();
-			}
-		});
-		exportPopup.add(exportRaw);
-
 		final JButton exportBtn = new JButton("Export");
 		exportBtn.addActionListener(new ActionListener() {
 			@Override
@@ -197,11 +188,9 @@ public class ImageGetter {
 		items.add(new BackgroundItem("Black", 0, 0, 0));
 		items.add(new BackgroundItem("Critter Tan", 0xdd, 0xcc, 0xaa));
 		items.add(new BackgroundItem("Dirt", 0xc1, 0x9a, 0x6b));
-		items.add(new BackgroundItem("Frontier Orange", 0xeb, 0x81, 0x00));
-		items.add(new BackgroundItem("Player Orange", 0xeb, 0x81, 0x00));
+		items.add(new BackgroundItem("Player/Civ Orange", 0xeb, 0x81, 0x00));
 		items.add(new BackgroundItem("Raider Brown", 0xbb, 0x99, 0x66));
-		items.add(new BackgroundItem("Rebel Gray", 0xcc, 0xcc, 0xcc));
-		items.add(new BackgroundItem("Silver Wolf Gray", 0xcc, 0xcc, 0xcc));
+		items.add(new BackgroundItem("Rebel/Wolf Gray", 0xcc, 0xcc, 0xcc));
 		items.add(new BackgroundItem("Sky Blue", 0x87, 0xce, 0xfa));
 		items.add(new BackgroundItem("White", 0xff, 0xff, 0xff));
 		for (String file : GameFiles.glob("BattleMap*.png")) {

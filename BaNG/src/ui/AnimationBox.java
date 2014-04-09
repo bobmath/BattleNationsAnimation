@@ -7,6 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -16,7 +18,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -40,6 +44,51 @@ public class AnimationBox extends JComponent {
 			public void actionPerformed(ActionEvent e) {
 				tick++;
 				repaint();
+			}
+		});
+		buildPopup();
+	}
+
+	private void buildPopup() {
+		final JPopupMenu popup = new JPopupMenu();
+
+		JMenuItem export = new JMenuItem("Export Raw Bitmap");
+		export.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurrentRawBitmap();
+			}
+		});
+		popup.add(export);
+
+		JMenuItem replace = new JMenuItem("Replace Raw Bitmap");
+		replace.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				replaceRawBitmap();
+			}
+		});
+		popup.add(replace);
+
+		JMenuItem restore = new JMenuItem("Restore Raw Bitmap");
+		restore.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (anim == null) return;
+				anim.getBitmap().restoreTexture();
+				repaint();
+			}
+		});
+		popup.add(restore);
+
+		this.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger())
+					popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger())
+					popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
 	}
@@ -94,11 +143,12 @@ public class AnimationBox extends JComponent {
 		repaint();
 	}
 
-	public File selectOutputFile(String ext) {
+	public File selectOutputFile(String suggest, String ext) {
+		if (suggest == null) suggest = anim.getName();
 		String uc = ext.toUpperCase();
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileFilter(new FileNameExtensionFilter(uc + " Images", ext));
-		fileChooser.setSelectedFile(new File(anim.getName() + "." + ext));
+		fileChooser.setSelectedFile(new File(suggest + "." + ext));
 		fileChooser.setDialogTitle("Save as " + uc);
 		int userOption = fileChooser.showSaveDialog(this);
 		if (userOption != JFileChooser.APPROVE_OPTION)
@@ -118,8 +168,7 @@ public class AnimationBox extends JComponent {
 
 	public void saveCurrentAsGif() {
 		if (anim == null) return;
-		if (anim == null) return;
-		File file = selectOutputFile("gif");
+		File file = selectOutputFile(anim.getName(), "gif");
 		if (file == null) return;
 		try {
 			writeGif(file);
@@ -133,7 +182,7 @@ public class AnimationBox extends JComponent {
 
 	public void saveCurrentAsPng() {
 		if (anim == null) return;
-		File file = selectOutputFile("png");
+		File file = selectOutputFile(anim.getName(), "png");
 		if (file == null) return;
 		try {
 			writePng(file);
@@ -147,7 +196,7 @@ public class AnimationBox extends JComponent {
 
 	public void saveCurrentRawBitmap() {
 		if (anim == null) return;
-		File file = selectOutputFile("png");
+		File file = selectOutputFile(anim.getBitmap().getName(), "png");
 		if (file == null) return;
 		try {
 			BufferedImage im = anim.getBitmap().getTexture().getImage();
@@ -204,6 +253,29 @@ public class AnimationBox extends JComponent {
 
 		file.delete();
 		ImageIO.write(frame, "png", file);
+	}
+
+	private void replaceRawBitmap() {
+		if (anim == null) return;
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("PNG Images", "png"));
+		fileChooser.setDialogTitle("Load PNG");
+		int userOption = fileChooser.showOpenDialog(this);
+		if (userOption != JFileChooser.APPROVE_OPTION) return;
+		File file = fileChooser.getSelectedFile();
+		if (file == null) return;
+
+		try {
+			BufferedImage im = ImageIO.read(file);
+			anim.getBitmap().replaceTexture(im);
+		}
+		catch (IOException e) {
+			JOptionPane.showMessageDialog(null,
+					"Error reading file.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		repaint();
 	}
 
 	public void setBackgroundColor(Color color) {
