@@ -154,6 +154,7 @@ public class AnimationBox extends JComponent {
 
 	public void setHitRange(int hitRange) {
 		this.hitRange = hitRange;
+		repaint();
 	}
 
 	public File selectOutputFile(String suggest, String ext) {

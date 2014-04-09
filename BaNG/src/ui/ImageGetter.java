@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -71,6 +72,7 @@ public class ImageGetter {
 	private JComboBox<String> frontCtrl;
 	private JComboBox<Weapon> weaponCtrl;
 	private JComboBox<Attack> attackCtrl;
+	private JSpinner rangeCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
 
@@ -220,13 +222,12 @@ public class ImageGetter {
 
 		unitPanel.add(new JLabel("Range:"));
 		SpinnerModel range = new SpinnerNumberModel(1, 1, 5, 1);
-		final JSpinner rangeCtrl = new JSpinner(range);
+		rangeCtrl = new JSpinner(range);
 		rangeCtrl.setMaximumSize(rangeCtrl.getPreferredSize());
 		rangeCtrl.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				Number value = (Number) rangeCtrl.getValue();
-				animBox.setHitRange(value.intValue());
+				updateRange();
 			}
 		});
 		unitPanel.add(rangeCtrl);
@@ -304,6 +305,7 @@ public class ImageGetter {
 					hitAnim = front ? attack.getFrontAnimation()
 							: attack.getBackAnimation();
 				}
+				updateRange();
 			}
 			else if (source instanceof Building) {
 				Building bld = (Building) source;
@@ -322,6 +324,12 @@ public class ImageGetter {
 		}
 		animBox.setAnimation(anim);
 		animBox.setHitAnimation(hitAnim, hitDelay);
+	}
+
+	private void updateRange() {
+		int sign = "Front".equals(frontCtrl.getSelectedItem()) ? -1 : 1;
+		Number value = (Number) rangeCtrl.getValue();
+		animBox.setHitRange(value.intValue() * sign);
 	}
 
 	public void showUI() {
