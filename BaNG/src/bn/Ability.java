@@ -43,13 +43,13 @@ public class Ability {
 
 	private Ability(String tag, JsonObject json, JsonObject dmgAnim) {
 		this.tag = tag;
-		name = Text.get(json.getString("name"));
-		JsonString animType = json.getJsonString("damageAnimationType");
+		name = Text.get(json.getString("name", null));
+		String animType = json.getString("damageAnimationType", null);
 		if (animType != null) {
-			JsonObject dmg = dmgAnim.getJsonObject(animType.getString());
+			JsonObject dmg = dmgAnim.getJsonObject(animType);
 			if (dmg != null) {
-				frontAnimationName = dmg.getString("front");
-				backAnimationName = dmg.getString("back");
+				frontAnimationName = dmg.getString("front", null);
+				backAnimationName = dmg.getString("back", null);
 			}
 		}
 	}

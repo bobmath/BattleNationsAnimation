@@ -42,7 +42,7 @@ public class Building implements Comparable<Building> {
 		for (JsonValue item : json) {
 			JsonObject menu = (JsonObject) item;
 			String title;
-			switch (menu.getString("title")) {
+			switch (menu.getString("title", "")) {
 			case "bmCat_houses": title = "Housing"; break;
 			case "bmCat_shops": title = "Shops"; break;
 			case "bmCat_military": title = "Military"; break;
@@ -82,7 +82,7 @@ public class Building implements Comparable<Building> {
 
 	private void initStructure(JsonObject json) {
 		if (json == null) return;
-		name = Text.get(json.getString("name"));
+		name = Text.get(json.getString("name", null));
 	}
 
 	private void initAnimation(JsonObject json) {

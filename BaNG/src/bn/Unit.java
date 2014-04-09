@@ -43,15 +43,15 @@ public class Unit implements Comparable<Unit> {
 
 	private Unit(String tag, JsonObject json) {
 		this.tag = tag;
-		name = Text.get(json.getString("name"));
+		name = Text.get(json.getString("name", null));
 		if (name == null) name = tag;
 		if (name.startsWith("Speciment ")) // fix game file typo
 			name = "Specimen" + name.substring(9);
-		shortName = Text.get(json.getString("shortName"));
+		shortName = Text.get(json.getString("shortName", null));
 		if (shortName == null) shortName = name;
-		side = json.getString("side");
-		backAnimName = json.getString("backIdleAnimation");
-		frontAnimName = json.getString("frontIdleAnimation");
+		side = json.getString("side", "None");
+		backAnimName = json.getString("backIdleAnimation", null);
+		frontAnimName = json.getString("frontIdleAnimation", null);
 		this.buildWeapons(json.getJsonObject("weapons"));
 	}
 
@@ -134,15 +134,15 @@ public class Unit implements Comparable<Unit> {
 		}
 		protected Weapon(String tag, JsonObject json) {
 			this.tag = tag;
-			name = Text.get(json.getString("name"));
+			name = Text.get(json.getString("name", null));
 			if (name == null) name = tag;
-			frontAnimationName = json.getString("frontattackAnimation");
-			backAnimationName = json.getString("backattackAnimation");
+			frontAnimationName = json.getString("frontattackAnimation", null);
+			backAnimationName = json.getString("backattackAnimation", null);
 			hitDelay = json.getInt("damageAnimationDelay", 0);
 			JsonArray abilities = json.getJsonArray("abilities");
 			attacks = new Attack[abilities.size()];
 			for (int i = 0; i < attacks.length; i++)
-				attacks[i] = new Attack(abilities.getString(i), this);
+				attacks[i] = new Attack(abilities.getString(i, null), this);
 		}
 		public String getName() {
 			return name;
