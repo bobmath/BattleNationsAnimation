@@ -1,6 +1,7 @@
 package ui;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,6 @@ import bn.GameFiles;
 
 public class BackgroundChoice {
 
-	private String name, file;
-	private Color color;
-
 	public static BackgroundChoice[] getBackgrounds() {
 		List<BackgroundChoice> items = new ArrayList<BackgroundChoice>();
 		items.add(new BackgroundChoice("Default Background"));
@@ -25,8 +23,9 @@ public class BackgroundChoice {
 		items.add(new BackgroundChoice("Rebel/Wolf Gray", 0xcc, 0xcc, 0xcc));
 		items.add(new BackgroundChoice("Sky Blue", 0x87, 0xce, 0xfa));
 		items.add(new BackgroundChoice("White", 0xff, 0xff, 0xff));
-		for (String file : GameFiles.glob("BattleMap*.png")) {
-			String name = file.replaceFirst("(?i:\\.png)$", "");
+		for (File file : GameFiles.glob("BattleMap*.png")) {
+			String name = file.getName();
+			name = name.replaceFirst("(?i:\\.png)$", "");
 			name = name.replaceFirst("^(?i:battle)", "");
 			items.add(new BackgroundChoice(name, file));
 		}
@@ -34,13 +33,16 @@ public class BackgroundChoice {
 		return items.toArray(array);
 	}
 
+	private String name;
+	private File file;
+	private Color color;
+
 	public void setBackground(AnimationBox animBox) {
 		if (file == null)
 			animBox.setBackgroundColor(color);
 		else {
 			try {
-				animBox.setBackgroundImage(ImageCache.read(
-						GameFiles.getFile(file)));
+				animBox.setBackgroundImage(ImageCache.read(file));
 			}
 			catch (IOException e) {
 				JOptionPane.showMessageDialog(null,
@@ -54,7 +56,7 @@ public class BackgroundChoice {
 		this.name = name;
 	}
 
-	private BackgroundChoice(String name, String file) {
+	private BackgroundChoice(String name, File file) {
 		this.name = name;
 		this.file = file;
 	}
@@ -64,7 +66,7 @@ public class BackgroundChoice {
 		this.color = new Color(r, g, b);
 	}
 
-	public String getFile() {
+	public File getFile() {
 		return file;
 	}
 

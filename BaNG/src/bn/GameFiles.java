@@ -7,6 +7,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonException;
@@ -65,28 +67,25 @@ public class GameFiles {
 		}
 	}
 
-	public static String[] glob(String pat) {
+	public static File[] glob(String pat) {
 		if (!initialized) init();
 		FilenameFilter filter = new GlobFilter(pat);
-		String[] uFiles = updateDir.list(filter);
-		String[] iFiles = installDir.list(filter);
-		String[] result;
-		if (uFiles == null || uFiles.length == 0)
-			result = iFiles;
-		else if (iFiles == null || iFiles.length == 0)
-			result = uFiles;
-		else {
-			int uLen = uFiles.length;
-			int iLen = iFiles.length;
-			result = new String[uLen + iLen];
-			for (int i = 0; i < uLen; i++)
-				result[i] = uFiles[i];
-			for (int i = 0; i < iLen; i++)
-				result[i+uLen] = iFiles[i];
-		}
-		if (result != null)
-			Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
+		Map<String,File> files = new HashMap<String,File>();
+		addFiles(files, installDir.listFiles(filter));
+		addFiles(files, updateDir.listFiles(filter));
+		String[] names = new String[files.size()];
+		names = files.keySet().toArray(names);
+		Arrays.sort(names, String.CASE_INSENSITIVE_ORDER);
+		File[] result = new File[names.length];
+		for (int i = 0; i < names.length; i++)
+			result[i] = files.get(names[i]);
 		return result;
+	}
+
+	private static void addFiles(Map<String,File> dest, File[] src) {
+		if (src != null)
+			for (File file : src)
+				dest.put(file.getName(), file);
 	}
 
 	public static void load() throws IOException {
