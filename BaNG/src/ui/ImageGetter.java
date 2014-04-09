@@ -1,13 +1,10 @@
 package ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -31,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
-import util.ImageCache;
 import bn.Animation;
 import bn.Building;
 import bn.GameFiles;
@@ -127,12 +123,14 @@ public class ImageGetter {
 	private JPanel buildAnimationControls() {
 		JPanel animPanel = new JPanel();
 		animPanel.setLayout(new BoxLayout(animPanel, BoxLayout.LINE_AXIS));
-		final JComboBox<BackgroundItem> backgroundCtrl =
-				new JComboBox<BackgroundItem>(buildBackgrounds());
+		final JComboBox<BackgroundChoice> backgroundCtrl =
+				new JComboBox<BackgroundChoice>(
+						BackgroundChoice.getBackgrounds());
 		backgroundCtrl.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setBackground((BackgroundItem) backgroundCtrl.getSelectedItem());
+				BackgroundChoice bkg = (BackgroundChoice) backgroundCtrl.getSelectedItem();
+				bkg.setBackground(animBox);
 			}
 		});
 		backgroundCtrl.setMaximumSize(backgroundCtrl.getPreferredSize());
@@ -180,68 +178,6 @@ public class ImageGetter {
 		animPanel.add(Box.createHorizontalGlue());
 		animPanel.add(exportBtn);
 		return animPanel;
-	}
-
-	private static BackgroundItem[] buildBackgrounds() {
-		List<BackgroundItem> items = new ArrayList<BackgroundItem>();
-		items.add(new BackgroundItem("Default Background"));
-		items.add(new BackgroundItem("Black", 0, 0, 0));
-		items.add(new BackgroundItem("Critter Tan", 0xdd, 0xcc, 0xaa));
-		items.add(new BackgroundItem("Dirt", 0xc1, 0x9a, 0x6b));
-		items.add(new BackgroundItem("Player/Civ Orange", 0xeb, 0x81, 0x00));
-		items.add(new BackgroundItem("Raider Brown", 0xbb, 0x99, 0x66));
-		items.add(new BackgroundItem("Rebel/Wolf Gray", 0xcc, 0xcc, 0xcc));
-		items.add(new BackgroundItem("Sky Blue", 0x87, 0xce, 0xfa));
-		items.add(new BackgroundItem("White", 0xff, 0xff, 0xff));
-		for (String file : GameFiles.glob("BattleMap*.png")) {
-			String name = file.replaceFirst("(?i:\\.png)$", "");
-			name = name.replaceFirst("^(?i:battle)", "");
-			items.add(new BackgroundItem(name, file));
-		}
-		BackgroundItem[] array = new BackgroundItem[items.size()];
-		return items.toArray(array);
-	}
-
-	private void setBackground(BackgroundItem bkg) {
-		String file = bkg.getFile();
-		if (file == null)
-			animBox.setBackgroundColor(bkg.getColor());
-		else {
-			try {
-				animBox.setBackgroundImage(ImageCache.read(
-						GameFiles.getFile(file)));
-			}
-			catch (IOException e) {
-				JOptionPane.showMessageDialog(null,
-						"Unable to load background",
-						"Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
-
-	private static class BackgroundItem {
-		private String name, file;
-		private Color color;
-		protected BackgroundItem(String name) {
-			this.name = name;
-		}
-		protected BackgroundItem(String name, String file) {
-			this.name = name;
-			this.file = file;
-		}
-		protected BackgroundItem(String name, int r, int g, int b) {
-			this.name = name;
-			this.color = new Color(r, g, b);
-		}
-		protected String getFile() {
-			return file;
-		}
-		protected Color getColor() {
-			return color;
-		}
-		public String toString() {
-			return name;
-		}
 	}
 
 	private JPanel buildBuildingControls(ActionListener update) {
