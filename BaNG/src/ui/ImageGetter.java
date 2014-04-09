@@ -13,6 +13,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -216,6 +217,19 @@ public class ImageGetter {
 		attackCtrl = new JComboBox<Attack>();
 		attackCtrl.addActionListener(update);
 		unitPanel.add(attackCtrl);
+
+		unitPanel.add(new JLabel("Range:"));
+		SpinnerModel range = new SpinnerNumberModel(1, 1, 5, 1);
+		final JSpinner rangeCtrl = new JSpinner(range);
+		rangeCtrl.setMaximumSize(rangeCtrl.getPreferredSize());
+		rangeCtrl.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Number value = (Number) rangeCtrl.getValue();
+				animBox.setHitRange(value.intValue());
+			}
+		});
+		unitPanel.add(rangeCtrl);
 
 		unitPanel.add(Box.createHorizontalGlue());
 		unitPanel.setVisible(false);

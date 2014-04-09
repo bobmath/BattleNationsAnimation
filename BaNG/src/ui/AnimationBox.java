@@ -38,7 +38,7 @@ public class AnimationBox extends JComponent {
 	private Color backgroundColor;
 	private double scale = 1;
 	private BufferedImage backgroundImage;
-	private int hitDelay;
+	private int hitDelay, hitRange;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -150,6 +150,10 @@ public class AnimationBox extends JComponent {
 		this.hitAnim = hitAnim;
 		this.hitDelay = hitDelay;
 		repaint();
+	}
+
+	public void setHitRange(int hitRange) {
+		this.hitRange = hitRange;
 	}
 
 	public File selectOutputFile(String suggest, String ext) {
