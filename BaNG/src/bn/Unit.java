@@ -126,6 +126,7 @@ public class Unit implements Comparable<Unit> {
 		private String name, tag;
 		private String frontAnimationName, backAnimationName;
 		private Attack[] attacks;
+		private int hitDelay;
 		protected Weapon() {
 			name = "(None)";
 			tag = "none";
@@ -137,6 +138,7 @@ public class Unit implements Comparable<Unit> {
 			if (name == null) name = tag;
 			frontAnimationName = json.getString("frontattackAnimation");
 			backAnimationName = json.getString("backattackAnimation");
+			hitDelay = json.getInt("damageAnimationDelay", 0);
 			JsonArray abilities = json.getJsonArray("abilities");
 			attacks = new Attack[abilities.size()];
 			for (int i = 0; i < attacks.length; i++)
@@ -160,6 +162,9 @@ public class Unit implements Comparable<Unit> {
 			for (int i = 0; i < attacks.length; i++)
 				array[i+1] = attacks[i];
 			return array;
+		}
+		public int getHitDelay() {
+			return hitDelay;
 		}
 		public String toString() {
 			return name;

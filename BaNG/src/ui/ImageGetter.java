@@ -271,7 +271,8 @@ public class ImageGetter {
 
 	private void updateAnimation() {
 		Animation anim = null;
-		Animation attackAnim = null;
+		Animation hitAnim = null;
+		int hitDelay = 0;
 		try {
 			if (source instanceof Unit) {
 				Unit unit = (Unit) source;
@@ -284,8 +285,9 @@ public class ImageGetter {
 					Weapon weap = (Weapon) weaponCtrl.getSelectedItem();
 					anim = front ? weap.getFrontAnimation()
 							: weap.getBackAnimation();
+					hitDelay = weap.getHitDelay();
 					Attack attack = (Attack) attackCtrl.getSelectedItem();
-					attackAnim = front ? attack.getFrontAnimation()
+					hitAnim = front ? attack.getFrontAnimation()
 							: attack.getBackAnimation();
 				}
 			}
@@ -305,7 +307,7 @@ public class ImageGetter {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 		animBox.setAnimation(anim);
-		animBox.setAttackAnimation(attackAnim);
+		animBox.setHitAnimation(hitAnim, hitDelay);
 	}
 
 	public void showUI() {

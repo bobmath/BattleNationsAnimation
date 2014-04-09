@@ -32,12 +32,13 @@ public class AnimationBox extends JComponent {
 	private static final Color defaultColor =
 			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
 
-	private Animation anim, attackAnim;
+	private Animation anim, hitAnim;
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
 	private double scale = 1;
 	private BufferedImage backgroundImage;
+	private int hitDelay;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -144,9 +145,10 @@ public class AnimationBox extends JComponent {
 		repaint();
 	}
 
-	public void setAttackAnimation(Animation attackAnim) {
-		if (attackAnim == this.attackAnim) return;
-		this.attackAnim = attackAnim;
+	public void setHitAnimation(Animation hitAnim, int hitDelay) {
+		if (hitAnim == this.hitAnim) return;
+		this.hitAnim = hitAnim;
+		this.hitDelay = hitDelay;
 		repaint();
 	}
 
