@@ -268,10 +268,8 @@ public class ImageGetter {
 			else if (source instanceof Building) {
 				Building bld = (Building) source;
 				boolean busy = "Busy".equals(busyCtrl.getSelectedItem());
-				if (busy)
-					anim = bld.getBusyAnimation();
-				if (anim == null)
-					anim = bld.getIdleAnimation();
+				anim = busy ? bld.getBusyAnimation()
+						: bld.getIdleAnimation();
 			}
 			else if (source instanceof String) {
 				anim = Animation.get((String) source);

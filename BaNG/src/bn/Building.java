@@ -75,28 +75,28 @@ public class Building implements Comparable<Building> {
 		this.tag = tag;
 		JsonObject configs = json.getJsonObject("componentConfigs");
 		if (configs == null) return;
-
-		JsonObject obj = configs.getJsonObject("StructureMenu");
-		if (obj != null) {
-			name = Text.get(obj.getString("name"));
-		}
-
-		obj = configs.getJsonObject("Animation");
-		if (obj != null) {
-			obj = obj.getJsonObject("animations");
-			if (obj != null) {
-				if (obj.containsKey("Active"))
-					busyAnimationName = obj.getString("Active");
-				if (obj.containsKey("Default"))
-					idleAnimationName = obj.getString("Default");
-				else if (obj.containsKey("Idle"))
-					idleAnimationName = obj.getString("Idle");
-				else
-					System.out.println(tag);
-			}
-		}
-
+		initStructure(configs.getJsonObject("StructureMenu"));
+		initAnimation(configs.getJsonObject("Animation"));
 		if (name == null) name = tag;
+	}
+
+	private void initStructure(JsonObject json) {
+		if (json == null) return;
+		name = Text.get(json.getString("name"));
+	}
+
+	private void initAnimation(JsonObject json) {
+		if (json == null) return;
+		json = json.getJsonObject("animations");
+		if (json == null) return;
+
+		if (json.containsKey("Active"))
+			busyAnimationName = json.getString("Active");
+
+		if (json.containsKey("Default"))
+			idleAnimationName = json.getString("Default");
+		else if (json.containsKey("Idle"))
+			idleAnimationName = json.getString("Idle");
 	}
 
 	public String getTag() {
@@ -116,11 +116,17 @@ public class Building implements Comparable<Building> {
 	}
 
 	public Animation getIdleAnimation() throws IOException {
-		return Animation.get(idleAnimationName);
+		Animation anim = Animation.get(idleAnimationName);
+		if (anim == null)
+			anim = Animation.get(busyAnimationName);
+		return anim;
 	}
 
 	public Animation getBusyAnimation() throws IOException {
-		return Animation.get(busyAnimationName);
+		Animation anim = Animation.get(busyAnimationName);
+		if (anim == null)
+			anim = Animation.get(idleAnimationName);
+		return anim;
 	}
 
 	public String toString() {
