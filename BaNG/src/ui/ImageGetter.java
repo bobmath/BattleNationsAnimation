@@ -2,7 +2,6 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +10,7 @@ import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -33,6 +33,7 @@ import bn.Animation;
 import bn.Building;
 import bn.GameFiles;
 import bn.Unit;
+import bn.Unit.Weapon;
 
 public class ImageGetter {
 
@@ -61,19 +62,15 @@ public class ImageGetter {
 	}
 
 	private Object source;
-
 	private JFrame frame;
 	private AnimationBox animBox;
 	private JTree tree;
 	private JPanel rightPanel;
-
+	private JPanel unitPanel;
 	private JComboBox<String> frontCtrl;
-
-	private JComboBox<String> busyCtrl;
-
-	private Container unitPanel;
-
+	private JComboBox<Weapon> weaponCtrl;
 	private JPanel buildingPanel;
+	private JComboBox<String> busyCtrl;
 
 	public void buildUI() {
 		frame = new JFrame("ImageGetter");
@@ -146,26 +143,14 @@ public class ImageGetter {
 			}
 		};
 
-		unitPanel = new JPanel();
-		unitPanel.setLayout(new BoxLayout(unitPanel, BoxLayout.LINE_AXIS));
-		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
-		frontCtrl.addActionListener(update);
-		frontCtrl.setMaximumSize(frontCtrl.getPreferredSize());
-		unitPanel.add(frontCtrl);
-		unitPanel.add(Box.createHorizontalGlue());
-		unitPanel.setVisible(false);
-		controlPanel.add(unitPanel);
+		controlPanel.add(buildUnitControls(update));
+		controlPanel.add(buildBuildingControls(update));
+		controlPanel.add(buildAnimationControls());
 
-		buildingPanel = new JPanel();
-		buildingPanel.setLayout(new BoxLayout(buildingPanel, BoxLayout.LINE_AXIS));
-		busyCtrl = new JComboBox<String>(new String[] { "Busy", "Idle" });
-		busyCtrl.addActionListener(update);
-		busyCtrl.setMaximumSize(busyCtrl.getPreferredSize());
-		buildingPanel.add(busyCtrl);
-		buildingPanel.add(Box.createHorizontalGlue());
-		buildingPanel.setVisible(false);
-		controlPanel.add(buildingPanel);
+		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
+	}
 
+	private JPanel buildAnimationControls() {
 		JPanel animPanel = new JPanel();
 		animPanel.setLayout(new BoxLayout(animPanel, BoxLayout.LINE_AXIS));
 		final JComboBox<BackgroundItem> backgroundCtrl =
@@ -221,9 +206,36 @@ public class ImageGetter {
 		});
 		animPanel.add(Box.createHorizontalGlue());
 		animPanel.add(exportBtn);
-		controlPanel.add(animPanel);
+		return animPanel;
+	}
 
-		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
+	private JPanel buildBuildingControls(ActionListener update) {
+		buildingPanel = new JPanel();
+		buildingPanel.setLayout(new BoxLayout(buildingPanel, BoxLayout.LINE_AXIS));
+		busyCtrl = new JComboBox<String>(new String[] { "Busy", "Idle" });
+		busyCtrl.addActionListener(update);
+		busyCtrl.setMaximumSize(busyCtrl.getPreferredSize());
+		buildingPanel.add(busyCtrl);
+		buildingPanel.add(Box.createHorizontalGlue());
+		buildingPanel.setVisible(false);
+		return buildingPanel;
+	}
+
+	private JPanel buildUnitControls(ActionListener update) {
+		unitPanel = new JPanel();
+		unitPanel.setLayout(new BoxLayout(unitPanel, BoxLayout.LINE_AXIS));
+		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
+		frontCtrl.addActionListener(update);
+		frontCtrl.setMaximumSize(frontCtrl.getPreferredSize());
+		unitPanel.add(frontCtrl);
+
+		weaponCtrl = new JComboBox<Weapon>();
+		weaponCtrl.addActionListener(update);
+		unitPanel.add(weaponCtrl);
+
+		unitPanel.add(Box.createHorizontalGlue());
+		unitPanel.setVisible(false);
+		return unitPanel;
 	}
 
 	private void updateSource() {
@@ -239,9 +251,14 @@ public class ImageGetter {
 
 	private void updateControls() {
 		if (source instanceof Unit) {
+			Unit unit = (Unit) source;
 			unitPanel.setVisible(true);
 			buildingPanel.setVisible(false);
-			switch (((Unit) source).getSide()) {
+
+			weaponCtrl.setModel(new DefaultComboBoxModel<Weapon>(unit.getWeapons()));
+			weaponCtrl.setMaximumSize(weaponCtrl.getPreferredSize());
+
+			switch (unit.getSide()) {
 			case "Player": case "Hero":
 				frontCtrl.setSelectedItem("Back");
 				break;
@@ -267,8 +284,15 @@ public class ImageGetter {
 			if (source instanceof Unit) {
 				Unit unit = (Unit) source;
 				boolean front = "Front".equals(frontCtrl.getSelectedItem());
-				anim = front ? unit.getFrontAnimation()
-						: unit.getBackAnimation();
+				if (weaponCtrl.getSelectedIndex() <= 0) {
+					anim = front ? unit.getFrontAnimation()
+							: unit.getBackAnimation();
+				}
+				else {
+					Weapon weap = (Weapon) weaponCtrl.getSelectedItem();
+					anim = front ? weap.getFrontAnimation()
+							: weap.getBackAnimation();
+				}
 			}
 			else if (source instanceof Building) {
 				Building bld = (Building) source;
