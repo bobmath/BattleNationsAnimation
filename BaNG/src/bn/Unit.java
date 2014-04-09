@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -122,11 +123,13 @@ public class Unit implements Comparable<Unit> {
 	}
 
 	public class Weapon {
-		String name, tag;
-		String frontAnimationName, backAnimationName;
+		private String name, tag;
+		private String frontAnimationName, backAnimationName;
+		private Attack[] attacks;
 		protected Weapon() {
-			this.name = "(None)";
-			this.tag = "none";
+			name = "(None)";
+			tag = "none";
+			attacks = new Attack[0];
 		}
 		protected Weapon(String tag, JsonObject json) {
 			this.tag = tag;
@@ -134,6 +137,10 @@ public class Unit implements Comparable<Unit> {
 			if (name == null) name = tag;
 			frontAnimationName = json.getString("frontattackAnimation");
 			backAnimationName = json.getString("backattackAnimation");
+			JsonArray abilities = json.getJsonArray("abilities");
+			attacks = new Attack[abilities.size()];
+			for (int i = 0; i < attacks.length; i++)
+				attacks[i] = new Attack(abilities.getString(i), this);
 		}
 		public String getName() {
 			return name;
@@ -147,8 +154,44 @@ public class Unit implements Comparable<Unit> {
 		public Animation getBackAnimation() throws IOException  {
 			return Animation.get(backAnimationName);
 		}
+		public Attack[] getAttacks() {
+			Attack[] array = new Attack[attacks.length+1];
+			array[0] = new Attack(null, this);
+			for (int i = 0; i < attacks.length; i++)
+				array[i+1] = attacks[i];
+			return array;
+		}
 		public String toString() {
 			return name;
+		}
+	}
+
+	public class Attack {
+		private Ability ability;
+		private Weapon weapon;
+		protected Attack(String tag, Weapon weapon) {
+			ability = Ability.get(tag);
+			if (ability == null)
+				ability = Ability.NO_ABILITY;
+			this.weapon = weapon;
+		}
+		public String getName() {
+			return ability.getName();
+		}
+		public String getTag() {
+			return ability.getTag();
+		}
+		public String toString() {
+			return ability.toString();
+		}
+		public Animation getFrontAnimation() throws IOException {
+			return ability.getFrontAnimation();
+		}
+		public Animation getBackAnimation() throws IOException {
+			return ability.getBackAnimation();
+		}
+		public Weapon getWeapon() {
+			return weapon;
 		}
 	}
 

@@ -90,6 +90,7 @@ public class GameFiles {
 
 	public static void load() throws IOException {
 		Text.load();
+		Ability.load();  // must load before unit
 		Unit.load();
 		Building.load();
 		Timeline.load();

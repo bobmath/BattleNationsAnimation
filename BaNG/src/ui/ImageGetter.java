@@ -32,6 +32,7 @@ import bn.Animation;
 import bn.Building;
 import bn.GameFiles;
 import bn.Unit;
+import bn.Unit.Attack;
 import bn.Unit.Weapon;
 
 public class ImageGetter {
@@ -68,6 +69,7 @@ public class ImageGetter {
 	private JPanel unitPanel;
 	private JComboBox<String> frontCtrl;
 	private JComboBox<Weapon> weaponCtrl;
+	private JComboBox<Attack> attackCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
 
@@ -201,8 +203,19 @@ public class ImageGetter {
 		unitPanel.add(frontCtrl);
 
 		weaponCtrl = new JComboBox<Weapon>();
-		weaponCtrl.addActionListener(update);
+		weaponCtrl.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateAttacks();
+				rightPanel.revalidate();
+				updateAnimation();
+			}
+		});
 		unitPanel.add(weaponCtrl);
+
+		attackCtrl = new JComboBox<Attack>();
+		attackCtrl.addActionListener(update);
+		unitPanel.add(attackCtrl);
 
 		unitPanel.add(Box.createHorizontalGlue());
 		unitPanel.setVisible(false);
@@ -228,6 +241,7 @@ public class ImageGetter {
 
 			weaponCtrl.setModel(new DefaultComboBoxModel<Weapon>(unit.getWeapons()));
 			weaponCtrl.setMaximumSize(weaponCtrl.getPreferredSize());
+			updateAttacks();
 
 			switch (unit.getSide()) {
 			case "Player": case "Hero":
@@ -249,8 +263,15 @@ public class ImageGetter {
 		rightPanel.revalidate();
 	}
 
+	private void updateAttacks() {
+		Weapon weapon = (Weapon) weaponCtrl.getSelectedItem();
+		attackCtrl.setModel(new DefaultComboBoxModel<Attack>(weapon.getAttacks()));
+		attackCtrl.setMaximumSize(attackCtrl.getPreferredSize());
+	}
+
 	private void updateAnimation() {
 		Animation anim = null;
+		Animation attackAnim = null;
 		try {
 			if (source instanceof Unit) {
 				Unit unit = (Unit) source;
@@ -263,6 +284,9 @@ public class ImageGetter {
 					Weapon weap = (Weapon) weaponCtrl.getSelectedItem();
 					anim = front ? weap.getFrontAnimation()
 							: weap.getBackAnimation();
+					Attack attack = (Attack) attackCtrl.getSelectedItem();
+					attackAnim = front ? attack.getFrontAnimation()
+							: attack.getBackAnimation();
 				}
 			}
 			else if (source instanceof Building) {
@@ -281,6 +305,7 @@ public class ImageGetter {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 		animBox.setAnimation(anim);
+		animBox.setAttackAnimation(attackAnim);
 	}
 
 	public void showUI() {

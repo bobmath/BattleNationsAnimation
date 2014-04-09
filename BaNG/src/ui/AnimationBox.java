@@ -29,9 +29,10 @@ import bn.Animation;
 
 public class AnimationBox extends JComponent {
 	private static final long serialVersionUID = 1L;
-	private static final Color defaultColor = new Color(0xf2, 0xf2, 0xf2); // wiki light gray
+	private static final Color defaultColor =
+			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
 
-	private Animation anim;
+	private Animation anim, attackAnim;
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
@@ -140,6 +141,12 @@ public class AnimationBox extends JComponent {
 		tick = 0;
 		if (anim != null)
 			timer.start();
+		repaint();
+	}
+
+	public void setAttackAnimation(Animation attackAnim) {
+		if (attackAnim == this.attackAnim) return;
+		this.attackAnim = attackAnim;
 		repaint();
 	}
 
