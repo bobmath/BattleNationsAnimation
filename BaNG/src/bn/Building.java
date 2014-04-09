@@ -90,13 +90,11 @@ public class Building implements Comparable<Building> {
 		json = json.getJsonObject("animations");
 		if (json == null) return;
 
-		if (json.containsKey("Active"))
-			busyAnimationName = json.getString("Active");
+		busyAnimationName = json.getString("Active", null);
 
-		if (json.containsKey("Default"))
-			idleAnimationName = json.getString("Default");
-		else if (json.containsKey("Idle"))
-			idleAnimationName = json.getString("Idle");
+		idleAnimationName = json.getString("Default", null);
+		if (idleAnimationName == null)
+			idleAnimationName = json.getString("Idle", null);
 	}
 
 	public String getTag() {
