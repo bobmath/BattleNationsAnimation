@@ -5,10 +5,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,17 +59,12 @@ public class Bitmap {
 	}
 
 	public void replaceTexture(BufferedImage im) {
-		if (originalTexture == null) {
-			originalTexture = texture;
-			modified.add(this);
-		}
 		texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x8000, 0x8000));
+		modified.add(this);  // keep change in memory
 	}
 
 	public void restoreTexture() {
-		if (originalTexture == null) return;
 		texture = originalTexture;
-		originalTexture = null;
 		modified.remove(this);
 	}
 
@@ -91,6 +84,7 @@ public class Bitmap {
 			else
 				readRLE(im, in);
 			texture = new TexturePaint(im, new Rectangle2D.Double(0, 0, 0x8000, 0x8000));
+			originalTexture = texture;
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
 			throw new FileFormatException("Invalid array index", e);
