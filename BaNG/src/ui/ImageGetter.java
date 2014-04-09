@@ -19,8 +19,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
@@ -174,6 +179,18 @@ public class ImageGetter {
 		});
 		backgroundCtrl.setMaximumSize(backgroundCtrl.getPreferredSize());
 		animPanel.add(backgroundCtrl);
+
+		SpinnerModel scaleRange = new SpinnerNumberModel(100, 5, 100, 5);
+		final JSpinner scaleCtrl = new JSpinner(scaleRange);
+		scaleCtrl.setMaximumSize(scaleCtrl.getPreferredSize());
+		scaleCtrl.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Number value = (Number) scaleCtrl.getValue();
+				animBox.setScale(value.doubleValue() / 100);
+			}
+		});
+		animPanel.add(scaleCtrl);
 
 		final JPopupMenu exportPopup = new JPopupMenu();
 

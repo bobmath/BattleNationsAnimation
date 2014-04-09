@@ -30,6 +30,7 @@ public class AnimationBox extends JComponent {
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
+	private double scale = 1;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -43,6 +44,7 @@ public class AnimationBox extends JComponent {
 
 	public void paint(Graphics g) {
 		if (anim == null) return;
+		anim.setScale(scale);
 		Graphics2D g2 = (Graphics2D) g;
 		setHints(g2);
 		Dimension dim = getSize();
@@ -178,6 +180,12 @@ public class AnimationBox extends JComponent {
 			setOpaque(true);
 			setBackground(color);
 		}
+		repaint();
+	}
+
+	public void setScale(double scale) {
+		if (scale <= 0 || scale > 1) return;
+		this.scale  = scale;
 		repaint();
 	}
 
