@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -31,6 +32,7 @@ public class AnimationBox extends JComponent {
 	protected int tick;
 	private Color backgroundColor;
 	private double scale = 1;
+	private BufferedImage backgroundImage;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -46,17 +48,40 @@ public class AnimationBox extends JComponent {
 		if (anim == null) return;
 		anim.setScale(scale);
 		Graphics2D g2 = (Graphics2D) g;
-		setHints(g2);
 		Dimension dim = getSize();
 		Rectangle2D bounds = anim.getBounds();
 		anim.setPosition((dim.width - bounds.getWidth())/2 - bounds.getX(),
 				(dim.height - bounds.getHeight())/2 - bounds.getY());
+		drawBackground(g2, true, dim.width, dim.height);
+		setHints(g2);
 		anim.drawFrame(tick % anim.getNumFrames(), g2);
 	}
 
-	private static void setHints(Graphics2D g2) {
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+	private static void setHints(Graphics2D g) {
+		// This makes drawing a background image outrageously slow the first time.
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	}
+
+	private void drawBackground(Graphics2D g, boolean transparent, int width, int height) {
+		if (backgroundImage == null) {
+			Color bg = backgroundColor;
+			if (bg == null) {
+				if (transparent) return;
+				bg = defaultColor;
+			}
+			g.setColor(bg);
+			g.fillRect(0, 0, width, height);
+		}
+		else {
+			AffineTransform oldTrans = g.getTransform();
+			g.translate(anim.getX(), anim.getY());
+			g.scale(scale, scale);
+			g.translate(-0.5*backgroundImage.getWidth(),
+					-0.5*backgroundImage.getHeight());
+			g.drawImage(backgroundImage, 0, 0, null);
+			g.setTransform(oldTrans);
+		}
 	}
 
 	public void setAnimation(Animation anim) {
@@ -120,6 +145,21 @@ public class AnimationBox extends JComponent {
 		}
 	}
 
+	public void saveCurrentRawBitmap() {
+		if (anim == null) return;
+		File file = selectOutputFile("png");
+		if (file == null) return;
+		try {
+			BufferedImage im = anim.getBitmap().getTexture().getImage();
+			ImageIO.write(im, "png", file);
+		}
+		catch (IOException e) {
+			JOptionPane.showMessageDialog(null,
+					"Error writing file.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
 	public void writeGif(File file) throws IOException {
 		Rectangle2D bounds = anim.getBounds();
 		int width = (int) Math.ceil(bounds.getWidth()) + 2;
@@ -131,10 +171,7 @@ public class AnimationBox extends JComponent {
 
 		BufferedImage frame = out.getFrame(0);
 		Graphics2D g = frame.createGraphics();
-		Color bg = backgroundColor;
-		if (bg == null) bg = defaultColor;
-		g.setColor(bg);
-		g.fillRect(0, 0, width, height);
+		drawBackground(g, false, width, height);
 		out.copyBackground();
 		setHints(g);
 		anim.drawFrame(0, g);
@@ -161,10 +198,7 @@ public class AnimationBox extends JComponent {
 				backgroundColor == null ? BufferedImage.TYPE_INT_ARGB
 						: BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = frame.createGraphics();
-		if (backgroundColor != null) {
-			g.setColor(backgroundColor);
-			g.fillRect(0, 0, width, height);
-		}
+		drawBackground(g, true, width, height);
 		setHints(g);
 		anim.drawFrame(0, g);
 
@@ -174,17 +208,19 @@ public class AnimationBox extends JComponent {
 
 	public void setBackgroundColor(Color color) {
 		backgroundColor = color;
-		if (color == null)
-			setOpaque(false);
-		else {
-			setOpaque(true);
-			setBackground(color);
-		}
+		backgroundImage = null;
+		repaint();
+	}
+
+	public void setBackgroundImage(BufferedImage image) {
+		backgroundColor = null;
+		backgroundImage = image;
 		repaint();
 	}
 
 	public void setScale(double scale) {
-		if (scale <= 0 || scale > 1) return;
+		if (scale <= 0 || scale > 2)
+			throw new IllegalArgumentException("Invalid scale");
 		this.scale  = scale;
 		repaint();
 	}

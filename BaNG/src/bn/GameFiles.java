@@ -96,4 +96,10 @@ public class GameFiles {
 		Timeline.load();
 	}
 
+	public static File getFile(String filename) {
+		File file = new File(updateDir, filename);
+		if (file.exists()) return file;
+		return new File(installDir, filename);
+	}
+
 }
