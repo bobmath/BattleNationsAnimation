@@ -49,7 +49,7 @@ public class Unit implements Comparable<Unit> {
 			name = "Specimen" + name.substring(9);
 		shortName = Text.get(json.getString("shortName", null));
 		if (shortName == null) shortName = name;
-		side = json.getString("side", "None");
+		side = json.getString("side", "Other");
 		backAnimName = json.getString("backIdleAnimation", null);
 		frontAnimName = json.getString("frontIdleAnimation", null);
 		this.buildWeapons(json.getJsonObject("weapons"));
