@@ -2,7 +2,6 @@ package bn;
 
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -10,7 +9,7 @@ import java.io.IOException;
 public class Animation {
 	private Timeline anim;
 	private Bitmap bitmap;
-	private double xPos, yPos, scale;
+	private double xPos, yPos;
 
 	public static Animation get(String name) throws IOException {
 		Timeline tl = Timeline.get(name);
@@ -21,7 +20,6 @@ public class Animation {
 	public Animation(Timeline anim) throws IOException {
 		this.anim = anim;
 		bitmap = Bitmap.get(anim.getPackageName());
-		scale = anim.getScale();
 	}
 
 	public String getName() {
@@ -57,30 +55,23 @@ public class Animation {
 		yPos = y;
 	}
 
-	public double getScale() {
-		return scale / anim.getScale();
-	}
-
-	public void setScale(double scale) {
-		this.scale = scale * anim.getScale();
-	}
-
 	public Rectangle2D.Double getBounds() {
-		Rectangle bounds = anim.getBounds();
-		return new Rectangle2D.Double(bounds.x * scale, bounds.y * scale,
-				bounds.width * scale, bounds.height * scale);
+		Rectangle2D.Double bounds = anim.getBounds();
+		bounds.x += xPos;
+		bounds.y += yPos;
+		return bounds;
 	}
 
 	public Rectangle2D.Double getBounds(int frame) {
-		Rectangle bounds = anim.getFrame(frame).getBounds();
-		return new Rectangle2D.Double(bounds.x * scale, bounds.y * scale,
-				bounds.width * scale, bounds.height * scale);
+		Rectangle2D.Double bounds = anim.getBounds(frame);
+		bounds.x += xPos;
+		bounds.y += yPos;
+		return bounds;
 	}
 
 	public void drawFrame(int num, Graphics2D g) {
 		AffineTransform oldTrans = g.getTransform();
 		g.translate(xPos, yPos);
-		g.scale(scale, scale);
 		Paint oldPaint = g.getPaint();
 		g.setPaint(bitmap.getTexture());
 		anim.drawFrame(num, g);

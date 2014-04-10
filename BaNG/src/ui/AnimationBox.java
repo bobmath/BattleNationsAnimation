@@ -5,11 +5,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -31,6 +31,9 @@ public class AnimationBox extends JComponent {
 	private static final long serialVersionUID = 1L;
 	private static final Color defaultColor =
 			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
+	private static final int GRID_X = 100;
+	private static final int GRID_Y = 50;
+	private static final int DELAY = 5;
 
 	private Animation anim, hitAnim;
 	private Timer timer;
@@ -38,7 +41,7 @@ public class AnimationBox extends JComponent {
 	private Color backgroundColor;
 	private double scale = 1;
 	private BufferedImage backgroundImage;
-	private int hitDelay, hitRange;
+	private int hitDelay, hitEnd, hitRange;
 
 	public AnimationBox() {
 		timer = new Timer(50, new ActionListener() {
@@ -97,42 +100,58 @@ public class AnimationBox extends JComponent {
 
 	public void paint(Graphics g) {
 		if (anim == null) return;
-		anim.setScale(scale);
+		if (tick > anim.getNumFrames() && tick > hitEnd)
+			tick = 0;
 		Graphics2D g2 = (Graphics2D) g;
 		Dimension dim = getSize();
-		Rectangle2D bounds = anim.getBounds();
-		anim.setPosition((dim.width - bounds.getWidth())/2 - bounds.getX(),
-				(dim.height - bounds.getHeight())/2 - bounds.getY());
-		drawBackground(g2, true, dim.width, dim.height);
-		setHints(g2);
-		anim.drawFrame(tick % anim.getNumFrames(), g2);
+		drawFrame(tick, g2, getAnimBounds(), dim.width, dim.height, true);
 	}
 
-	private static void setHints(Graphics2D g) {
-		// This makes drawing a background image outrageously slow the first time.
+	private Rectangle2D.Double getAnimBounds() {
+		double range = hitRange + 0.5 * Math.signum((double) hitRange);
+		anim.setPosition(-0.5*GRID_X*range, 0.5*GRID_Y*range + GRID_Y);
+		Rectangle2D.Double bounds = anim.getBounds();
+
+		if (hitAnim != null) {
+			hitAnim.setPosition(0.5*GRID_X*range, -0.5*GRID_Y*range + GRID_Y);
+			Rectangle2D.Double hitBounds = hitAnim.getBounds();
+			Rectangle2D.union(bounds, hitBounds, bounds);
+		}
+
+		return bounds;
+	}
+
+	private void drawFrame(int frame, Graphics2D g,
+			Rectangle2D.Double bounds, int width, int height,
+			boolean transparent) {
+		BufferedImage im = backgroundImage;
+		if (im == null) {
+			Color bg = backgroundColor;
+			if (bg != null || !transparent) {
+				if (bg == null)
+					bg = defaultColor;
+				g.setColor(bg);
+				g.fillRect(0, 0, width, height);
+			}
+		}
+
+		g.translate(0.5*width, 0.5*height);
+		g.scale(scale, scale);
+		g.translate(-0.5*bounds.width - bounds.x,
+				-0.5*bounds.height - bounds.y);
+
+		if (im != null)
+			g.drawImage(im, -im.getWidth()/2, -im.getHeight()/2, null);
+
+		// This makes drawing the background image outrageously slow
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-	}
 
-	private void drawBackground(Graphics2D g, boolean transparent, int width, int height) {
-		if (backgroundImage == null) {
-			Color bg = backgroundColor;
-			if (bg == null) {
-				if (transparent) return;
-				bg = defaultColor;
-			}
-			g.setColor(bg);
-			g.fillRect(0, 0, width, height);
-		}
-		else {
-			AffineTransform oldTrans = g.getTransform();
-			g.translate(anim.getX(), anim.getY());
-			g.scale(scale, scale);
-			g.translate(-0.5*backgroundImage.getWidth(),
-					-0.5*backgroundImage.getHeight());
-			g.drawImage(backgroundImage, 0, 0, null);
-			g.setTransform(oldTrans);
-		}
+		int num = anim.getNumFrames();
+		anim.drawFrame(frame < num ? frame : num-1, g);
+
+		if (frame >= hitDelay && frame < hitEnd)
+			hitAnim.drawFrame(frame - hitDelay, g);
 	}
 
 	public void setAnimation(Animation anim) {
@@ -149,11 +168,31 @@ public class AnimationBox extends JComponent {
 		if (hitAnim == this.hitAnim) return;
 		this.hitAnim = hitAnim;
 		this.hitDelay = hitDelay;
+		hitEnd = (hitAnim == null) ? 0 : hitDelay + hitAnim.getNumFrames();
 		repaint();
 	}
 
 	public void setHitRange(int hitRange) {
 		this.hitRange = hitRange;
+		repaint();
+	}
+
+	public void setBackgroundColor(Color color) {
+		backgroundColor = color;
+		backgroundImage = null;
+		repaint();
+	}
+
+	public void setBackgroundImage(BufferedImage image) {
+		backgroundColor = null;
+		backgroundImage = image;
+		repaint();
+	}
+
+	public void setScale(double scale) {
+		if (scale <= 0 || scale > 2)
+			throw new IllegalArgumentException("Invalid scale");
+		this.scale  = scale;
 		repaint();
 	}
 
@@ -224,47 +263,29 @@ public class AnimationBox extends JComponent {
 	}
 
 	public void writeGif(File file) throws IOException {
-		Rectangle2D bounds = anim.getBounds();
-		int width = (int) Math.ceil(bounds.getWidth()) + 2;
+		Rectangle2D.Double bounds = getAnimBounds();
+		int width = (int) Math.ceil(bounds.width) + 2;
 		int height = (int) Math.ceil(bounds.getHeight()) + 2;
-		anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
-				(height - bounds.getHeight())/2 - bounds.getY());
-		int frames = anim.getNumFrames();
-		GifAnimation out = new GifAnimation(width, height, frames, 5);
-
-		BufferedImage frame = out.getFrame(0);
-		Graphics2D g = frame.createGraphics();
-		drawBackground(g, false, width, height);
-		out.copyBackground();
-		setHints(g);
-		anim.drawFrame(0, g);
-
-		for (int i = 1; i < frames; i++) {
-			frame = out.getFrame(i);
-			g = frame.createGraphics();
-			setHints(g);
-			anim.drawFrame(i, g);
+		int frames = Math.max(anim.getNumFrames(), hitEnd);
+		GifAnimation out = new GifAnimation(width, height, frames, DELAY);
+		for (int i = 0; i < frames; i++) {
+			Graphics2D g = out.getFrame(i).createGraphics();
+			drawFrame(i, g, bounds, width, height, false);
 		}
-
 		file.delete();
 		out.write(file);
 	}
 
 	private void writePng(File file) throws IOException {
-		Rectangle2D bounds = anim.getBounds(0);
+		Rectangle2D.Double bounds = anim.getBounds(0);
 		int width = (int) Math.ceil(bounds.getWidth()) + 2;
 		int height = (int) Math.ceil(bounds.getHeight()) + 2;
-		anim.setPosition((width - bounds.getWidth())/2 - bounds.getX(),
-				(height - bounds.getHeight())/2 - bounds.getY());
-
-		BufferedImage frame = new BufferedImage(width, height,
-				backgroundColor == null ? BufferedImage.TYPE_INT_ARGB
-						: BufferedImage.TYPE_INT_RGB);
+		int type = (backgroundImage == null && backgroundColor == null
+				|| backgroundImage.getTransparency() != Transparency.OPAQUE)
+				? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+		BufferedImage frame = new BufferedImage(width, height, type);
 		Graphics2D g = frame.createGraphics();
-		drawBackground(g, true, width, height);
-		setHints(g);
-		anim.drawFrame(0, g);
-
+		drawFrame(0, g, bounds, width, height, true);
 		file.delete();
 		ImageIO.write(frame, "png", file);
 	}
@@ -289,25 +310,6 @@ public class AnimationBox extends JComponent {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
-		repaint();
-	}
-
-	public void setBackgroundColor(Color color) {
-		backgroundColor = color;
-		backgroundImage = null;
-		repaint();
-	}
-
-	public void setBackgroundImage(BufferedImage image) {
-		backgroundColor = null;
-		backgroundImage = image;
-		repaint();
-	}
-
-	public void setScale(double scale) {
-		if (scale <= 0 || scale > 2)
-			throw new IllegalArgumentException("Invalid scale");
-		this.scale  = scale;
 		repaint();
 	}
 

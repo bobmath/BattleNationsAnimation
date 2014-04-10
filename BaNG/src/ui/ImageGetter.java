@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -288,6 +287,7 @@ public class ImageGetter {
 		Animation anim = null;
 		Animation hitAnim = null;
 		int hitDelay = 0;
+		animBox.setHitRange(0);
 		try {
 			if (source instanceof Unit) {
 				Unit unit = (Unit) source;

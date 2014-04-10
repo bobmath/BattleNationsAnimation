@@ -4,9 +4,9 @@ import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 public class Frame {
@@ -18,8 +18,8 @@ public class Frame {
 	protected Frame() {
 	}
 
-	public Rectangle getBounds() {
-		return new Rectangle(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
+	public Rectangle2D.Double getBounds() {
+		return new Rectangle2D.Double(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
 	}
 
 	public void draw(Graphics2D g) {
@@ -53,7 +53,11 @@ public class Frame {
 		transforms = new AffineTransform[numPolys];
 		alpha = new AlphaComposite[numPolys];
 		if (ver > 4) in.readByte();
-		if (numPolys == 0) return;
+		if (numPolys == 0) {
+			xMax = -1;
+			yMax = -1;
+			return;
+		}
 
 		xMin = Integer.MAX_VALUE;
 		xMax = Integer.MIN_VALUE;
@@ -80,10 +84,11 @@ public class Frame {
 			stretchBounds(p2.x1, p2.y1);
 			stretchBounds(p3.x1, p3.y1);
 
+			double scale = (ver > 4) ? 1.0/32 : 1;
 			AffineTransform t = new AffineTransform(
-					p1.x1 - p0.x1, p1.y1 - p0.y1,
-					p2.x1 - p0.x1, p2.y1 - p0.y1,
-					p0.x1, p0.y1);
+					(p1.x1 - p0.x1) * scale, (p1.y1 - p0.y1) * scale,
+					(p2.x1 - p0.x1) * scale, (p2.y1 - p0.y1) * scale,
+					p0.x1 * scale, p0.y1 * scale);
 			AffineTransform t2 = new AffineTransform(
 					p1.x2 - p0.x2, p1.y2 - p0.y2,
 					p2.x2 - p0.x2, p2.y2 - p0.y2,

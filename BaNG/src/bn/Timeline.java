@@ -1,7 +1,7 @@
 package bn;
 
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,12 +53,18 @@ public class Timeline {
 		return name;
 	}
 
-	public Rectangle getBounds() {
-		return new Rectangle(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
+	public Rectangle2D.Double getBounds() {
+		return new Rectangle2D.Double(xMin * scale, yMin * scale,
+				(xMax-xMin+1) * scale, (yMax-yMin+1) * scale);
 	}
 
-	public double getScale() {
-		return scale;
+	public Rectangle2D.Double getBounds(int frame) {
+		Rectangle2D.Double bounds = frames[frame].getBounds();
+		bounds.x *= scale;
+		bounds.y *= scale;
+		bounds.width *= scale;
+		bounds.height *= scale;
+		return bounds;
 	}
 
 	public int getNumFrames() {
