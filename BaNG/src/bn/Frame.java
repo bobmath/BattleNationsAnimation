@@ -19,6 +19,7 @@ public class Frame {
 	}
 
 	public Rectangle2D.Double getBounds() {
+		if (xMax < xMin) return null;
 		return new Rectangle2D.Double(xMin, yMin, xMax-xMin+1, yMax-yMin+1);
 	}
 
@@ -53,17 +54,13 @@ public class Frame {
 		transforms = new AffineTransform[numPolys];
 		alpha = new AlphaComposite[numPolys];
 		if (ver > 4) in.readByte();
-		if (numPolys == 0) {
-			xMax = -1;
-			yMax = -1;
-			return;
-		}
 
 		xMin = Integer.MAX_VALUE;
 		xMax = Integer.MIN_VALUE;
 		yMin = Integer.MAX_VALUE;
 		yMax = Integer.MIN_VALUE;
 
+		double scale = (ver > 4) ? 1.0/32 : 1;
 		boolean hasAlpha = false;
 		int[] p = new int[6];
 		int[] x = new int[4];
@@ -84,7 +81,6 @@ public class Frame {
 			stretchBounds(p2.x1, p2.y1);
 			stretchBounds(p3.x1, p3.y1);
 
-			double scale = (ver > 4) ? 1.0/32 : 1;
 			AffineTransform t = new AffineTransform(
 					(p1.x1 - p0.x1) * scale, (p1.y1 - p0.y1) * scale,
 					(p2.x1 - p0.x1) * scale, (p2.y1 - p0.y1) * scale,
