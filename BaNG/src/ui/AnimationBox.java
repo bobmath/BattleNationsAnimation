@@ -133,6 +133,12 @@ public class AnimationBox extends JComponent {
 				Rectangle2D.intersect(bounds, b, bounds);
 		}
 
+		if (bounds != null) {
+			bounds.x *= scale;
+			bounds.y *= scale;
+			bounds.width *= scale;
+			bounds.height *= scale;
+		}
 		return bounds;
 	}
 
@@ -151,10 +157,9 @@ public class AnimationBox extends JComponent {
 		}
 
 		if (bounds == null) return;
-		g.translate(0.5*width, 0.5*height);
+		g.translate(0.5*(width - bounds.width) - bounds.x,
+				0.5*(height - bounds.height) - bounds.y);
 		g.scale(scale, scale);
-		g.translate(-0.5*bounds.width - bounds.x,
-				-0.5*bounds.height - bounds.y);
 
 		if (im != null)
 			g.drawImage(im, -im.getWidth()/2, -im.getHeight()/2, null);
@@ -279,7 +284,7 @@ public class AnimationBox extends JComponent {
 		Rectangle2D.Double bounds = getAnimBounds(-1);
 		if (bounds == null) return;
 		int width = (int) Math.ceil(bounds.width) + 2;
-		int height = (int) Math.ceil(bounds.getHeight()) + 2;
+		int height = (int) Math.ceil(bounds.height) + 2;
 		GifAnimation out = new GifAnimation(width, height, numFrames, DELAY);
 		for (int i = 0; i < numFrames; i++) {
 			Graphics2D g = out.getFrame(i).createGraphics();
@@ -292,8 +297,8 @@ public class AnimationBox extends JComponent {
 	private void writePng(File file) throws IOException {
 		Rectangle2D.Double bounds = getAnimBounds(0);
 		if (bounds == null) return;
-		int width = (int) Math.ceil(bounds.getWidth()) + 2;
-		int height = (int) Math.ceil(bounds.getHeight()) + 2;
+		int width = (int) Math.ceil(bounds.width) + 2;
+		int height = (int) Math.ceil(bounds.height) + 2;
 		int type = (backgroundImage == null && backgroundColor == null
 				|| backgroundImage.getTransparency() != Transparency.OPAQUE)
 				? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
