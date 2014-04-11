@@ -14,6 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -31,23 +32,25 @@ public class AnimationBox extends JComponent {
 	private static final long serialVersionUID = 1L;
 	private static final Color defaultColor =
 			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
-	private static final int GRID_X = 100;
-	private static final int GRID_Y = 50;
 	private static final int DELAY = 5;
 
-	private Animation anim, hitAnim;
+	private Animation anim;
+	private Animation[] anims;
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
 	private double scale = 1;
 	private BufferedImage backgroundImage;
-	private int hitDelay, hitEnd, hitRange;
+	private int numFrames;
 
 	public AnimationBox() {
+		anims = new Animation[0];
 		timer = new Timer(50, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				tick++;
+				if (tick >= numFrames)
+					tick = 0;
 				repaint();
 			}
 		});
@@ -99,23 +102,35 @@ public class AnimationBox extends JComponent {
 	}
 
 	public void paint(Graphics g) {
-		if (anim == null) return;
-		if (tick > anim.getNumFrames() && tick > hitEnd)
-			tick = 0;
 		Graphics2D g2 = (Graphics2D) g;
 		Dimension dim = getSize();
-		drawFrame(tick, g2, getAnimBounds(), dim.width, dim.height, true);
+		Rectangle2D.Double bounds = getAnimBounds(-1);
+		drawFrame(tick, g2, bounds, dim.width, dim.height, true);
 	}
 
-	private Rectangle2D.Double getAnimBounds() {
-		double range = hitRange + 0.5 * Math.signum((double) hitRange);
-		anim.setPosition(-0.5*GRID_X*range, 0.5*GRID_Y*range + GRID_Y);
-		Rectangle2D.Double bounds = anim.getBounds();
+	private Rectangle2D.Double getAnimBounds(int frame) {
+		Rectangle2D.Double bounds = null;
+		for (Animation a : anims) {
+			Rectangle2D.Double b = frame < 0 ? a.getBounds()
+					: a.getBounds(frame);
+			if (b != null) {
+				if (bounds == null)
+					bounds = b;
+				else
+					Rectangle2D.union(bounds, b, bounds);
+			}
+		}
 
-		if (hitAnim != null) {
-			hitAnim.setPosition(0.5*GRID_X*range, -0.5*GRID_Y*range + GRID_Y);
-			Rectangle2D.Double hitBounds = hitAnim.getBounds();
-			Rectangle2D.union(bounds, hitBounds, bounds);
+		BufferedImage im = backgroundImage;
+		if (im != null) {
+			int width = im.getWidth() - 2;
+			int height = im.getHeight() - 2;
+			Rectangle2D.Double b = new Rectangle2D.Double(
+					-width/2, -height/2, width, height);
+			if (bounds == null)
+				bounds = b;
+			else
+				Rectangle2D.intersect(bounds, b, bounds);
 		}
 
 		return bounds;
@@ -135,6 +150,7 @@ public class AnimationBox extends JComponent {
 			}
 		}
 
+		if (bounds == null) return;
 		g.translate(0.5*width, 0.5*height);
 		g.scale(scale, scale);
 		g.translate(-0.5*bounds.width - bounds.x,
@@ -147,33 +163,30 @@ public class AnimationBox extends JComponent {
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-		int num = anim.getNumFrames();
-		anim.drawFrame(frame < num ? frame : num-1, g);
-
-		if (frame >= hitDelay && frame < hitEnd)
-			hitAnim.drawFrame(frame - hitDelay, g);
+		for (Animation a : anims)
+			a.drawFrame(frame, g);
 	}
 
 	public void setAnimation(Animation anim) {
-		if (anim == this.anim) return;
-		this.anim = anim;
+		setAnimation(anim, null);
+	}
+
+	public void setAnimation(Animation anim, List<Animation> anims) {
 		timer.stop();
 		tick = 0;
-		if (anim != null)
+		this.anim = anim;
+		numFrames = 0;
+		if (anim == null) {
+			this.anims = new Animation[0];
+		}
+		else {
+			this.anims = (anims == null) ? new Animation[] { anim }
+			: anims.toArray(new Animation[anims.size()]);
+			for (Animation a : this.anims)
+				if (a.getEnd() > numFrames)
+					numFrames = a.getEnd();
 			timer.start();
-		repaint();
-	}
-
-	public void setHitAnimation(Animation hitAnim, int hitDelay) {
-		if (hitAnim == this.hitAnim) return;
-		this.hitAnim = hitAnim;
-		this.hitDelay = hitDelay;
-		hitEnd = (hitAnim == null) ? 0 : hitDelay + hitAnim.getNumFrames();
-		repaint();
-	}
-
-	public void setHitRange(int hitRange) {
-		this.hitRange = hitRange;
+		}
 		repaint();
 	}
 
@@ -196,12 +209,12 @@ public class AnimationBox extends JComponent {
 		repaint();
 	}
 
-	public File selectOutputFile(String suggest, String ext) {
-		if (suggest == null) suggest = anim.getName();
+	private File selectOutputFile(String suggest, String ext) {
 		String uc = ext.toUpperCase();
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileFilter(new FileNameExtensionFilter(uc + " Images", ext));
-		fileChooser.setSelectedFile(new File(suggest + "." + ext));
+		if (suggest != null)
+			fileChooser.setSelectedFile(new File(suggest + "." + ext));
 		fileChooser.setDialogTitle("Save as " + uc);
 		int userOption = fileChooser.showSaveDialog(this);
 		if (userOption != JFileChooser.APPROVE_OPTION)
@@ -263,12 +276,12 @@ public class AnimationBox extends JComponent {
 	}
 
 	public void writeGif(File file) throws IOException {
-		Rectangle2D.Double bounds = getAnimBounds();
+		Rectangle2D.Double bounds = getAnimBounds(-1);
+		if (bounds == null) return;
 		int width = (int) Math.ceil(bounds.width) + 2;
 		int height = (int) Math.ceil(bounds.getHeight()) + 2;
-		int frames = Math.max(anim.getNumFrames(), hitEnd);
-		GifAnimation out = new GifAnimation(width, height, frames, DELAY);
-		for (int i = 0; i < frames; i++) {
+		GifAnimation out = new GifAnimation(width, height, numFrames, DELAY);
+		for (int i = 0; i < numFrames; i++) {
 			Graphics2D g = out.getFrame(i).createGraphics();
 			drawFrame(i, g, bounds, width, height, false);
 		}
@@ -277,7 +290,8 @@ public class AnimationBox extends JComponent {
 	}
 
 	private void writePng(File file) throws IOException {
-		Rectangle2D.Double bounds = anim.getBounds(0);
+		Rectangle2D.Double bounds = getAnimBounds(0);
+		if (bounds == null) return;
 		int width = (int) Math.ceil(bounds.getWidth()) + 2;
 		int height = (int) Math.ceil(bounds.getHeight()) + 2;
 		int type = (backgroundImage == null && backgroundColor == null

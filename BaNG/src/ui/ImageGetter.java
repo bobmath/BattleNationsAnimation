@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -226,7 +228,7 @@ public class ImageGetter {
 		rangeCtrl.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				updateRange();
+				updateAnimation();
 			}
 		});
 		unitPanel.add(rangeCtrl);
@@ -284,37 +286,21 @@ public class ImageGetter {
 	}
 
 	private void updateAnimation() {
-		Animation anim = null;
-		Animation hitAnim = null;
-		int hitDelay = 0;
-		animBox.setHitRange(0);
 		try {
 			if (source instanceof Unit) {
-				Unit unit = (Unit) source;
-				boolean front = "Front".equals(frontCtrl.getSelectedItem());
-				if (weaponCtrl.getSelectedIndex() <= 0) {
-					anim = front ? unit.getFrontAnimation()
-							: unit.getBackAnimation();
-				}
-				else {
-					Weapon weap = (Weapon) weaponCtrl.getSelectedItem();
-					anim = front ? weap.getFrontAnimation()
-							: weap.getBackAnimation();
-					hitDelay = weap.getHitDelay();
-					Attack attack = (Attack) attackCtrl.getSelectedItem();
-					hitAnim = front ? attack.getFrontAnimation()
-							: attack.getBackAnimation();
-				}
-				updateRange();
+				buildUnitAnimation((Unit) source);
 			}
 			else if (source instanceof Building) {
 				Building bld = (Building) source;
 				boolean busy = "Busy".equals(busyCtrl.getSelectedItem());
-				anim = busy ? bld.getBusyAnimation()
-						: bld.getIdleAnimation();
+				animBox.setAnimation(busy ? bld.getBusyAnimation()
+						: bld.getIdleAnimation());
 			}
 			else if (source instanceof String) {
-				anim = Animation.get((String) source);
+				animBox.setAnimation(Animation.get((String) source));
+			}
+			else {
+				animBox.setAnimation(null);
 			}
 		}
 		catch (IOException e) {
@@ -322,14 +308,57 @@ public class ImageGetter {
 					"Unable to load animation",
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
-		animBox.setAnimation(anim);
-		animBox.setHitAnimation(hitAnim, hitDelay);
 	}
 
-	private void updateRange() {
-		int sign = "Front".equals(frontCtrl.getSelectedItem()) ? -1 : 1;
-		Number value = (Number) rangeCtrl.getValue();
-		animBox.setHitRange(value.intValue() * sign);
+	private static final int GRID_X = 100;
+	private static final int GRID_Y = 50;
+
+	private void buildUnitAnimation(Unit unit) throws IOException {
+		boolean front = "Front".equals(frontCtrl.getSelectedItem());
+		double range = ((Number) rangeCtrl.getValue()).doubleValue();
+		if (front)
+			range = -0.5 - range;
+		else
+			range += 0.5;
+		double x = 0.5 * GRID_X * range;
+		double y = 0.5 * GRID_Y * range;
+		Animation anim = null;
+		List<Animation> list = null;
+
+		if (weaponCtrl.getSelectedIndex() <= 0) {
+			anim = front ? unit.getFrontAnimation()
+					: unit.getBackAnimation();
+		}
+		else {
+			Weapon weap = (Weapon) weaponCtrl.getSelectedItem();
+			anim = front ? weap.getFrontAnimation()
+					: weap.getBackAnimation();
+
+			if (attackCtrl.getSelectedIndex() > 0) {
+				Attack attack = (Attack) attackCtrl.getSelectedItem();
+				Animation hitAnim = front ? attack.getFrontAnimation()
+						: attack.getBackAnimation();
+				hitAnim.setDelay(weap.getHitDelay());
+				hitAnim.setPosition(x, GRID_Y - y);
+				list = new ArrayList<Animation>();
+				if (!front) list.add(hitAnim);
+				list.add(anim);
+				int end = anim.getEnd();
+				while (end < hitAnim.getEnd()) {
+					Animation idle = front ? unit.getFrontAnimation()
+							: unit.getBackAnimation();
+					if (idle.getNumFrames() <= 0) break;
+					idle.setPosition(-x, y + GRID_Y);
+					idle.setDelay(end);
+					list.add(idle);
+					end = idle.getEnd();
+				}
+				if (front) list.add(hitAnim);
+			}
+		}
+
+		anim.setPosition(-x, y + GRID_Y);
+		animBox.setAnimation(anim, list);
 	}
 
 	public void showUI() {

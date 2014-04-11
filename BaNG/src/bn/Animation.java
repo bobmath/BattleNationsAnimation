@@ -7,27 +7,29 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 public class Animation {
-	private Timeline anim;
+
+	private Timeline timeline;
 	private Bitmap bitmap;
+	private int delay;
 	private double xPos, yPos;
 
 	public static Animation get(String name) throws IOException {
-		Timeline tl = Timeline.get(name);
-		if (tl == null) return null;
-		return new Animation(tl);
+		Timeline timeline = Timeline.get(name);
+		if (timeline == null) return null;
+		return new Animation(timeline);
 	}
 
-	public Animation(Timeline anim) throws IOException {
-		this.anim = anim;
-		bitmap = Bitmap.get(anim.getPackageName());
+	public Animation(Timeline timeline) throws IOException {
+		this.timeline = timeline;
+		bitmap = Bitmap.get(timeline.getPackageName());
 	}
 
 	public String getName() {
-		return anim.getName();
+		return timeline.getName();
 	}
 
 	public Timeline getTimeline() {
-		return anim;
+		return timeline;
 	}
 
 	public Bitmap getBitmap() {
@@ -35,11 +37,14 @@ public class Animation {
 	}
 
 	public int getNumFrames() {
-		return anim.getNumFrames();
+		return timeline.getNumFrames();
 	}
 
 	public Frame getFrame(int num) {
-		return anim.getFrame(num);
+		num -= delay;
+		if (num < 0 || num >= timeline.getNumFrames())
+			return null;
+		return timeline.getFrame(num);
 	}
 
 	public double getX() {
@@ -55,15 +60,30 @@ public class Animation {
 		yPos = y;
 	}
 
+	public int getDelay() {
+		return delay;
+	}
+
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
+	public int getEnd() {
+		return timeline.getNumFrames() + delay;
+	}
+
 	public Rectangle2D.Double getBounds() {
-		Rectangle2D.Double bounds = anim.getBounds();
+		Rectangle2D.Double bounds = timeline.getBounds();
 		bounds.x += xPos;
 		bounds.y += yPos;
 		return bounds;
 	}
 
 	public Rectangle2D.Double getBounds(int frame) {
-		Rectangle2D.Double bounds = anim.getBounds(frame);
+		frame -= delay;
+		if (frame < 0 || frame >= timeline.getNumFrames())
+			return null;
+		Rectangle2D.Double bounds = timeline.getBounds(frame);
 		if (bounds != null) {
 			bounds.x += xPos;
 			bounds.y += yPos;
@@ -72,11 +92,14 @@ public class Animation {
 	}
 
 	public void drawFrame(int num, Graphics2D g) {
+		num -= delay;
+		if (num < 0 || num >= timeline.getNumFrames())
+			return;
 		AffineTransform oldTrans = g.getTransform();
 		g.translate(xPos, yPos);
 		Paint oldPaint = g.getPaint();
 		g.setPaint(bitmap.getTexture());
-		anim.drawFrame(num, g);
+		timeline.drawFrame(num, g);
 		g.setPaint(oldPaint);
 		g.setTransform(oldTrans);
 	}
