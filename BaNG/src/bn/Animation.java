@@ -64,8 +64,10 @@ public class Animation {
 
 	public Rectangle2D.Double getBounds(int frame) {
 		Rectangle2D.Double bounds = anim.getBounds(frame);
-		bounds.x += xPos;
-		bounds.y += yPos;
+		if (bounds != null) {
+			bounds.x += xPos;
+			bounds.y += yPos;
+		}
 		return bounds;
 	}
 

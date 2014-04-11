@@ -60,10 +60,12 @@ public class Timeline {
 
 	public Rectangle2D.Double getBounds(int frame) {
 		Rectangle2D.Double bounds = frames[frame].getBounds();
-		bounds.x *= scale;
-		bounds.y *= scale;
-		bounds.width *= scale;
-		bounds.height *= scale;
+		if (bounds != null) {
+			bounds.x *= scale;
+			bounds.y *= scale;
+			bounds.width *= scale;
+			bounds.height *= scale;
+		}
 		return bounds;
 	}
 
