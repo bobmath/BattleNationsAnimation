@@ -336,10 +336,8 @@ public class ImageGetter {
 
 			if (anim != null && attackCtrl.getSelectedIndex() > 0) {
 				Attack attack = (Attack) attackCtrl.getSelectedItem();
-				boolean hitFront = "Target".equals(attack.getTargetType())
-						? front : !front;
-				Animation hitAnim = hitFront ? attack.getFrontAnimation()
-						: attack.getBackAnimation();
+				Animation hitAnim = front ? attack.getBackAnimation()
+						: attack.getFrontAnimation();
 				if (hitAnim != null) {
 					hitAnim.setDelay(weap.getHitDelay());
 					hitAnim.setPosition(x, GRID_Y - y);
