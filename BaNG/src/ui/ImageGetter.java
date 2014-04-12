@@ -334,30 +334,35 @@ public class ImageGetter {
 			anim = front ? weap.getFrontAnimation()
 					: weap.getBackAnimation();
 
-			if (attackCtrl.getSelectedIndex() > 0) {
+			if (anim != null && attackCtrl.getSelectedIndex() > 0) {
 				Attack attack = (Attack) attackCtrl.getSelectedItem();
-				Animation hitAnim = front ? attack.getFrontAnimation()
+				boolean hitFront = "Target".equals(attack.getTargetType())
+						? front : !front;
+				Animation hitAnim = hitFront ? attack.getFrontAnimation()
 						: attack.getBackAnimation();
-				hitAnim.setDelay(weap.getHitDelay());
-				hitAnim.setPosition(x, GRID_Y - y);
-				list = new ArrayList<Animation>();
-				if (!front) list.add(hitAnim);
-				list.add(anim);
-				int end = anim.getEnd();
-				while (end < hitAnim.getEnd()) {
-					Animation idle = front ? unit.getFrontAnimation()
-							: unit.getBackAnimation();
-					if (idle.getNumFrames() <= 0) break;
-					idle.setPosition(-x, y + GRID_Y);
-					idle.setDelay(end);
-					list.add(idle);
-					end = idle.getEnd();
+				if (hitAnim != null) {
+					hitAnim.setDelay(weap.getHitDelay());
+					hitAnim.setPosition(x, GRID_Y - y);
+					list = new ArrayList<Animation>();
+					if (!front) list.add(hitAnim);
+					list.add(anim);
+					int end = anim.getEnd();
+					while (end < hitAnim.getEnd()) {
+						Animation idle = front ? unit.getFrontAnimation()
+								: unit.getBackAnimation();
+						if (idle.getNumFrames() <= 0) break;
+						idle.setPosition(-x, y + GRID_Y);
+						idle.setDelay(end);
+						list.add(idle);
+						end = idle.getEnd();
+					}
+					if (front) list.add(hitAnim);
 				}
-				if (front) list.add(hitAnim);
 			}
 		}
 
-		anim.setPosition(-x, y + GRID_Y);
+		if (anim != null)
+			anim.setPosition(-x, y + GRID_Y);
 		animBox.setAnimation(anim, list);
 	}
 

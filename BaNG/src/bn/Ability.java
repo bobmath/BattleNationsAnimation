@@ -15,6 +15,7 @@ public class Ability {
 
 	private String tag, name;
 	private String frontAnimationName, backAnimationName;
+	private String targetType;
 
 	public static void load() throws IOException {
 		abilities = new HashMap<String,Ability>();
@@ -51,6 +52,20 @@ public class Ability {
 				backAnimationName = dmg.getString("back", null);
 			}
 		}
+
+		initStats(json.getJsonObject("stats"));
+
+		if (targetType == null)
+			targetType = "Unspecified";
+	}
+
+	private void initStats(JsonObject stats) {
+		if (stats == null) return;
+
+		JsonObject targ = stats.getJsonObject("targetArea");
+		if (targ != null) {
+			targetType = targ.getString("type", null);
+		}
 	}
 
 	public static Ability get(String tag) {
@@ -75,6 +90,10 @@ public class Ability {
 
 	public Animation getBackAnimation() throws IOException {
 		return Animation.get(backAnimationName);
+	}
+
+	public String getTargetType() {
+		return targetType;
 	}
 
 }

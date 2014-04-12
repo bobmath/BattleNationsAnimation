@@ -195,6 +195,9 @@ public class Unit implements Comparable<Unit> {
 		public Animation getBackAnimation() throws IOException {
 			return ability.getBackAnimation();
 		}
+		public String getTargetType() {
+			return ability.getTargetType();
+		}
 		public Weapon getWeapon() {
 			return weapon;
 		}
