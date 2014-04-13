@@ -42,6 +42,7 @@ public class AnimationBox extends JComponent {
 	private double scale = 1;
 	private BufferedImage backgroundImage;
 	private int numFrames;
+	private boolean paused;
 
 	public AnimationBox() {
 		anims = new Animation[0];
@@ -190,9 +191,18 @@ public class AnimationBox extends JComponent {
 			for (Animation a : this.anims)
 				if (a.getEnd() > numFrames)
 					numFrames = a.getEnd();
-			timer.start();
+			if (!paused)
+				timer.start();
 		}
 		repaint();
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
+		if (paused)
+			timer.stop();
+		else
+			timer.start();
 	}
 
 	public void setBackgroundColor(Color color) {
@@ -295,7 +305,8 @@ public class AnimationBox extends JComponent {
 	}
 
 	private void writePng(File file) throws IOException {
-		Rectangle2D.Double bounds = getAnimBounds(0);
+		int num = tick;
+		Rectangle2D.Double bounds = getAnimBounds(num);
 		if (bounds == null) return;
 		int width = (int) Math.ceil(bounds.width) + 2;
 		int height = (int) Math.ceil(bounds.height) + 2;
@@ -304,7 +315,7 @@ public class AnimationBox extends JComponent {
 				? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 		BufferedImage frame = new BufferedImage(width, height, type);
 		Graphics2D g = frame.createGraphics();
-		drawFrame(0, g, bounds, width, height, true);
+		drawFrame(num, g, bounds, width, height, true);
 		file.delete();
 		ImageIO.write(frame, "png", file);
 	}

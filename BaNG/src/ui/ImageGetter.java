@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -23,6 +24,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -122,6 +124,7 @@ public class ImageGetter {
 		controlPanel.add(buildUnitControls(update));
 		controlPanel.add(buildBuildingControls(update));
 		controlPanel.add(buildAnimationControls());
+		controlPanel.add(buildPlayControls());
 
 		rightPanel.add(controlPanel, BorderLayout.PAGE_END);
 	}
@@ -152,7 +155,26 @@ public class ImageGetter {
 				animBox.setScale(value.doubleValue() / 100);
 			}
 		});
+		animPanel.add(new JLabel("Scale:"));
 		animPanel.add(scaleCtrl);
+		animPanel.add(Box.createHorizontalGlue());
+		return animPanel;
+	}
+
+	private JPanel buildPlayControls() {
+		JPanel playPanel = new JPanel();
+		playPanel.setLayout(new BoxLayout(playPanel, BoxLayout.LINE_AXIS));
+		ImageIcon playIcon = new ImageIcon("images/play.png", "Play");
+		ImageIcon pauseIcon = new ImageIcon("images/pause.png", "Pause");
+		final JToggleButton pauseButton = new JToggleButton(pauseIcon);
+		pauseButton.setSelectedIcon(playIcon);
+		pauseButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				animBox.setPaused(pauseButton.isSelected());
+			}
+		});
+		playPanel.add(pauseButton);
 
 		final JPopupMenu exportPopup = new JPopupMenu();
 
@@ -181,9 +203,9 @@ public class ImageGetter {
 				exportPopup.show(exportBtn, 0, 0);
 			}
 		});
-		animPanel.add(Box.createHorizontalGlue());
-		animPanel.add(exportBtn);
-		return animPanel;
+		playPanel.add(Box.createHorizontalGlue());
+		playPanel.add(exportBtn);
+		return playPanel;
 	}
 
 	private JPanel buildBuildingControls(ActionListener update) {
