@@ -138,7 +138,8 @@ public class Unit implements Comparable<Unit> {
 			if (name == null) name = tag;
 			frontAnimationName = json.getString("frontattackAnimation", null);
 			backAnimationName = json.getString("backattackAnimation", null);
-			hitDelay = json.getInt("damageAnimationDelay", 0);
+			hitDelay = json.getInt("damageAnimationDelay", 0)
+					+ json.getInt("firesoundFrame", 0);
 			JsonArray abilities = json.getJsonArray("abilities");
 			attacks = new Attack[abilities.size()];
 			for (int i = 0; i < attacks.length; i++)
