@@ -15,6 +15,7 @@ public class Unit implements Comparable<Unit> {
 
 	private String tag, name, shortName, side;
 	private String backAnimName, frontAnimName;
+	private Rank[] ranks;
 	private Weapon[] weapons;
 
 	public static void load() throws IOException {
@@ -52,10 +53,17 @@ public class Unit implements Comparable<Unit> {
 		side = json.getString("side", "Other");
 		backAnimName = json.getString("backIdleAnimation", null);
 		frontAnimName = json.getString("frontIdleAnimation", null);
-		this.buildWeapons(json.getJsonObject("weapons"));
+		initWeapons(json.getJsonObject("weapons"));
+		initRanks(json.getJsonArray("stats"));
 	}
 
-	private void buildWeapons(JsonObject json) {
+	private void initRanks(JsonArray json) {
+		ranks = new Rank[json.size()];
+		for (int i = 0; i < ranks.length; i++)
+			ranks[i] = new Rank(json.getJsonObject(i));
+	}
+
+	private void initWeapons(JsonObject json) {
 		if (json == null || json.isEmpty()) {
 			this.weapons = new Weapon[0];
 			return;
@@ -122,11 +130,34 @@ public class Unit implements Comparable<Unit> {
 		return cmp;
 	}
 
+	public int getMaxRank() {
+		return ranks.length;
+	}
+
+	public Rank getRank(int rank) {
+		return ranks[rank-1];
+	}
+
+	public int getPower(int rank) {
+		return ranks[rank-1].getPower();
+	}
+
+	public class Rank {
+		int power;
+		protected Rank(JsonObject json) {
+			power = json.getInt("power", 0);
+		}
+		public int getPower() {
+			return power;
+		}
+	}
+
 	public class Weapon {
 		private String name, tag;
 		private String frontAnimationName, backAnimationName;
 		private Attack[] attacks;
 		private int hitDelay;
+		private int minDamage, maxDamage;
 		protected Weapon() {
 			name = "(None)";
 			tag = "none";
@@ -167,6 +198,12 @@ public class Unit implements Comparable<Unit> {
 		public int getHitDelay() {
 			return hitDelay;
 		}
+		public int getMinDamage() {
+			return minDamage;
+		}
+		public int getMaxDamage() {
+			return maxDamage;
+		}
 		public String toString() {
 			return name;
 		}
@@ -195,6 +232,17 @@ public class Unit implements Comparable<Unit> {
 		}
 		public Animation getBackAnimation() throws IOException {
 			return ability.getBackAnimation();
+		}
+		public int getMinDamage(int rank) {
+			return ability.adjustDamage(weapon.getMinDamage(),
+					getPower(rank));
+		}
+		public int getMaxDamage(int rank) {
+			return ability.adjustDamage(weapon.getMaxDamage(),
+					getPower(rank));
+		}
+		public double getAverageDamage(int rank) {
+			return 0.5*(getMinDamage(rank) + getMaxDamage(rank));
 		}
 		public String getTargetType() {
 			return ability.getTargetType();

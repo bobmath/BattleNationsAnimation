@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -16,6 +17,8 @@ public class Ability {
 	private String tag, name;
 	private String frontAnimationName, backAnimationName;
 	private String targetType;
+	double damageFromWeapon, damageFromUnit;
+	int damageBonus;
 
 	public static void load() throws IOException {
 		abilities = new HashMap<String,Ability>();
@@ -62,10 +65,22 @@ public class Ability {
 	private void initStats(JsonObject stats) {
 		if (stats == null) return;
 
+		damageBonus = stats.getInt("damage", 0);
+		damageFromWeapon = getDouble(stats, "damageFromWeapon", 1);
+		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
+
 		JsonObject targ = stats.getJsonObject("targetArea");
 		if (targ != null) {
 			targetType = targ.getString("type", null);
 		}
+	}
+
+	private static double getDouble(JsonObject json, String name,
+			double defaultVal) {
+		JsonNumber val = json.getJsonNumber(name);
+		if (val == null)
+			return defaultVal;
+		return val.doubleValue();
 	}
 
 	public static Ability get(String tag) {
@@ -94,6 +109,12 @@ public class Ability {
 
 	public String getTargetType() {
 		return targetType;
+	}
+
+	public int adjustDamage(int damage, int power) {
+		return (int) ((Math.floor(damage * damageFromWeapon)
+				+ damageBonus)
+				* (1 + power * damageFromUnit / 50));
 	}
 
 }
