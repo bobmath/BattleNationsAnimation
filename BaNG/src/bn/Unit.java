@@ -250,8 +250,8 @@ public class Unit implements Comparable<Unit> {
 		public double getAverageDamage(int rank) {
 			return 0.5*(getMinDamage(rank) + getMaxDamage(rank));
 		}
-		public String getTargetType() {
-			return ability.getTargetType();
+		public Ability getAbility() {
+			return ability;
 		}
 		public Weapon getWeapon() {
 			return weapon;
