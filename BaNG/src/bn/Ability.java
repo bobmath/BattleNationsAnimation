@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -16,9 +17,12 @@ public class Ability {
 
 	private String tag, name;
 	private String frontAnimationName, backAnimationName;
+	private double damageFromWeapon, damageFromUnit;
+	private int damageBonus;
+	private int aoeDelay;
 	private String targetType;
-	double damageFromWeapon, damageFromUnit;
-	int damageBonus;
+	private boolean randomTarget;
+	private TargetSquare[] targetArea, damageArea;
 
 	public static void load() throws IOException {
 		abilities = new HashMap<String,Ability>();
@@ -68,13 +72,36 @@ public class Ability {
 		damageFromWeapon = getDouble(stats, "damageFromWeapon", 1);
 		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
 
+		damageArea = initArea(stats.getJsonObject("damageArea"), false);
 		JsonObject targ = stats.getJsonObject("targetArea");
 		if (targ != null) {
 			targetType = targ.getString("type", null);
+			randomTarget = targ.getBoolean("random");
+			aoeDelay = (int) Math.round(
+					getDouble(targ, "aoeOrderDelay", 0) * 20);
+			targetArea = initArea(targ, randomTarget);
 		}
 	}
 
-	private static double getDouble(JsonObject json, String name,
+	private static TargetSquare[] initArea(JsonObject area,
+			boolean random) {
+		if (area == null) return null;
+		JsonArray data = area.getJsonArray("data");
+		if (data == null) return null;
+
+		double weight = 0;
+		if (random) {
+			for (JsonValue item : data)
+				weight += getDouble((JsonObject) item, "weight", 0);
+		}
+
+		TargetSquare[] squares = new TargetSquare[data.size()];
+		for (int i = 0; i < squares.length; i++)
+			squares[i] = new TargetSquare(data.getJsonObject(i), weight);
+		return squares;
+	}
+
+	protected static double getDouble(JsonObject json, String name,
 			double defaultVal) {
 		JsonNumber val = json.getJsonNumber(name);
 		if (val == null)
@@ -106,14 +133,60 @@ public class Ability {
 		return Animation.get(backAnimationName);
 	}
 
-	public String getTargetType() {
-		return targetType;
-	}
-
 	public int adjustDamage(int damage, int power) {
 		return (int) ((Math.floor(damage * damageFromWeapon)
 				+ damageBonus)
 				* (1 + power * damageFromUnit / 50));
+	}
+
+	public int getAoeDelay() {
+		return aoeDelay;
+	}
+
+	public boolean getRandomTarget() {
+		return randomTarget;
+	}
+
+	public String getTargetType() {
+		return targetType;
+	}
+
+	public TargetSquare[] getDamageArea() {
+		return damageArea.clone();
+	}
+
+	public TargetSquare[] getTargetArea() {
+		return targetArea.clone();
+	}
+
+	public static class TargetSquare {
+		private double value;
+		private int x, y, order;
+		protected TargetSquare(JsonObject json, double weight) {
+			if (weight == 0) {
+				value = getDouble(json, "damagePercent", 0) / 100;
+				order = json.getInt("order", 0);
+			}
+			else
+				value = getDouble(json, "weight", 0) / weight;
+			JsonObject pos = json.getJsonObject("pos");
+			if (pos != null) {
+				x = pos.getInt("x", 0);
+				y = pos.getInt("y", 0);
+			}
+		}
+		public double getValue() {
+			return value;
+		}
+		public int getX() {
+			return x;
+		}
+		public int getY() {
+			return y;
+		}
+		public int getOrder() {
+			return order;
+		}
 	}
 
 }
