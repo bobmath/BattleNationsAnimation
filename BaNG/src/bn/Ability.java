@@ -47,19 +47,18 @@ public class Ability {
 	private Ability(String tag, JsonObject json, JsonObject dmgAnim) {
 		this.tag = tag;
 		name = Text.get(json.getString("name", null));
-		String animType = json.getString("damageAnimationType", null);
-		if (animType != null) {
-			JsonObject dmg = dmgAnim.getJsonObject(animType);
-			if (dmg != null) {
-				frontAnimationName = dmg.getString("front", null);
-				backAnimationName = dmg.getString("back", null);
-			}
-		}
-
+		if (name == null) name = tag;
+		initAnimation(json, dmgAnim);
 		initStats(json.getJsonObject("stats"));
+	}
 
-		if (targetType == null)
-			targetType = "Unspecified";
+	private void initAnimation(JsonObject json, JsonObject dmgAnim) {
+		String animType = json.getString("damageAnimationType", null);
+		if (animType == null) return;
+		JsonObject dmg = dmgAnim.getJsonObject(animType);
+		if (dmg == null) return;
+		frontAnimationName = dmg.getString("front", null);
+		backAnimationName = dmg.getString("back", null);
 	}
 
 	private void initStats(JsonObject stats) {
