@@ -75,7 +75,7 @@ public class GameFiles {
 		addFiles(files, updateDir.listFiles(filter));
 		String[] names = new String[files.size()];
 		names = files.keySet().toArray(names);
-		Arrays.sort(names, String.CASE_INSENSITIVE_ORDER);
+		Arrays.sort(names);
 		File[] result = new File[names.length];
 		for (int i = 0; i < names.length; i++)
 			result[i] = files.get(names[i]);
@@ -85,7 +85,7 @@ public class GameFiles {
 	private static void addFiles(Map<String,File> dest, File[] src) {
 		if (src != null)
 			for (File file : src)
-				dest.put(file.getName(), file);
+				dest.put(file.getName().toLowerCase(), file);
 	}
 
 	public static void load() throws IOException {
