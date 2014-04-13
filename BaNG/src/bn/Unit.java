@@ -171,10 +171,16 @@ public class Unit implements Comparable<Unit> {
 			backAnimationName = json.getString("backattackAnimation", null);
 			hitDelay = json.getInt("damageAnimationDelay", 0)
 					+ json.getInt("firesoundFrame", 0);
+			initStats(json.getJsonObject("stats"));
 			JsonArray abilities = json.getJsonArray("abilities");
 			attacks = new Attack[abilities.size()];
 			for (int i = 0; i < attacks.length; i++)
 				attacks[i] = new Attack(abilities.getString(i, null), this);
+		}
+		private void initStats(JsonObject json) {
+			if (json == null) return;
+			minDamage = json.getInt("base_damage_min", 0);
+			maxDamage = json.getInt("base_damage_max", 0);
 		}
 		public String getName() {
 			return name;
