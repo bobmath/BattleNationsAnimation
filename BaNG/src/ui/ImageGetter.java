@@ -177,7 +177,7 @@ public class ImageGetter {
 		});
 		playPanel.add(pauseButton);
 
-		JSlider frameSlider = new JSlider(JSlider.HORIZONTAL);
+		JSlider frameSlider = new JSlider(0, 10, 0);
 		animBox.setSlider(frameSlider);
 		playPanel.add(frameSlider);
 
