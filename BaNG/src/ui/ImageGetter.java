@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
@@ -175,6 +176,10 @@ public class ImageGetter {
 			}
 		});
 		playPanel.add(pauseButton);
+
+		JSlider frameSlider = new JSlider(JSlider.HORIZONTAL);
+		animBox.setSlider(frameSlider);
+		playPanel.add(frameSlider);
 
 		final JPopupMenu exportPopup = new JPopupMenu();
 

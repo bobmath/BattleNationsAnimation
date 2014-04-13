@@ -22,7 +22,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JSlider;
 import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import util.GifAnimation;
@@ -43,6 +46,7 @@ public class AnimationBox extends JComponent {
 	private BufferedImage backgroundImage;
 	private int numFrames;
 	private boolean paused;
+	private JSlider frameSlider;
 
 	public AnimationBox() {
 		anims = new Animation[0];
@@ -53,6 +57,8 @@ public class AnimationBox extends JComponent {
 				if (tick >= numFrames)
 					tick = 0;
 				repaint();
+				if (frameSlider != null)
+					frameSlider.setValue(tick);
 			}
 		});
 		buildPopup();
@@ -100,6 +106,28 @@ public class AnimationBox extends JComponent {
 					popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
+	}
+
+	public void setSlider(JSlider frameSlider) {
+		this.frameSlider = frameSlider;
+		if (frameSlider != null) {
+			frameSlider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					int value = AnimationBox.this.frameSlider.getValue();
+					if (value != tick) {
+						tick = value;
+						repaint();
+					}
+					if (!paused) {
+						if (AnimationBox.this.frameSlider.getValueIsAdjusting())
+							timer.stop();
+						else if (!timer.isRunning())
+							timer.start();
+					}
+				}
+			});
+		}
 	}
 
 	public void paint(Graphics g) {
@@ -191,6 +219,11 @@ public class AnimationBox extends JComponent {
 			for (Animation a : this.anims)
 				if (a.getEnd() > numFrames)
 					numFrames = a.getEnd();
+			if (frameSlider != null) {
+				frameSlider.setMinimum(0);
+				frameSlider.setMaximum(numFrames <= 1 ? 1 : numFrames - 1);
+				frameSlider.setValue(tick);
+			}
 			if (!paused)
 				timer.start();
 		}
