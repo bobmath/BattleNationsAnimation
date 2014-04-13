@@ -378,6 +378,7 @@ public class ImageGetter {
 						if (idle.getNumFrames() <= 0) break;
 						idle.setPosition(-x, y + GRID_Y);
 						idle.setDelay(end);
+						idle.earlyStop(hitAnim.getEnd());
 						list.add(idle);
 						end = idle.getEnd();
 					}

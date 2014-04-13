@@ -10,7 +10,7 @@ public class Animation {
 
 	private Timeline timeline;
 	private Bitmap bitmap;
-	private int delay;
+	private int numFrames, delay;
 	private double xPos, yPos;
 
 	public static Animation get(String name) throws IOException {
@@ -21,6 +21,7 @@ public class Animation {
 
 	public Animation(Timeline timeline) throws IOException {
 		this.timeline = timeline;
+		this.numFrames = timeline.getNumFrames();
 		bitmap = Bitmap.get(timeline.getPackageName());
 	}
 
@@ -37,12 +38,12 @@ public class Animation {
 	}
 
 	public int getNumFrames() {
-		return timeline.getNumFrames();
+		return numFrames;
 	}
 
 	public Frame getFrame(int num) {
 		num -= delay;
-		if (num < 0 || num >= timeline.getNumFrames())
+		if (num < 0 || num >= numFrames)
 			return null;
 		return timeline.getFrame(num);
 	}
@@ -69,7 +70,20 @@ public class Animation {
 	}
 
 	public int getEnd() {
-		return timeline.getNumFrames() + delay;
+		return numFrames + delay;
+	}
+
+	public void earlyStop(int frame) {
+		frame -= delay;
+		if (frame < 1) frame = 1;
+		Frame first = timeline.getFrame(0);
+		while (frame < numFrames) {
+			if (timeline.getFrame(frame) == first) {
+				numFrames = frame;
+				break;
+			}
+			frame++;
+		}
 	}
 
 	public Rectangle2D.Double getBounds() {
@@ -81,7 +95,7 @@ public class Animation {
 
 	public Rectangle2D.Double getBounds(int frame) {
 		frame -= delay;
-		if (frame < 0 || frame >= timeline.getNumFrames())
+		if (frame < 0 || frame >= numFrames)
 			return null;
 		Rectangle2D.Double bounds = timeline.getBounds(frame);
 		if (bounds != null) {
@@ -93,7 +107,7 @@ public class Animation {
 
 	public void drawFrame(int num, Graphics2D g) {
 		num -= delay;
-		if (num < 0 || num >= timeline.getNumFrames())
+		if (num < 0 || num >= numFrames)
 			return;
 		AffineTransform oldTrans = g.getTransform();
 		g.translate(xPos, yPos);
