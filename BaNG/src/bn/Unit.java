@@ -9,6 +9,8 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import util.FileFormatException;
+
 public class Unit implements Comparable<Unit> {
 
 	private static Map<String,Unit> units;

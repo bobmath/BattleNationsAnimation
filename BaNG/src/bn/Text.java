@@ -8,6 +8,8 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import util.FileFormatException;
+
 public class Text {
 
 	private static Map<String,String> text;

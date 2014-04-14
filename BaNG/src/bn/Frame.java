@@ -9,6 +9,9 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
+import util.FileFormatException;
+import util.LittleEndianInputStream;
+
 public class Frame {
 	private AffineTransform[] transforms;
 	private Polygon[] polys;

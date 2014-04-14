@@ -16,6 +16,7 @@ import javax.json.JsonReader;
 import javax.json.JsonStructure;
 import javax.json.stream.JsonParsingException;
 
+import util.FileFormatException;
 import util.GlobFilter;
 
 public class GameFiles {

@@ -9,6 +9,8 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import util.FileFormatException;
+
 public class Ability {
 
 	public static final Ability NO_ABILITY = new Ability();

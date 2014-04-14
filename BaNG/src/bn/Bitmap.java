@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import util.FileFormatException;
+import util.LittleEndianInputStream;
+
 public class Bitmap {
 
 	private static Map<String,SoftReference<Bitmap>> cache =

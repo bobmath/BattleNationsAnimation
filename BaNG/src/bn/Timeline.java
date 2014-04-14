@@ -11,6 +11,9 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import util.FileFormatException;
+import util.LittleEndianInputStream;
+
 public class Timeline {
 
 	private static Map<String,String> packageIndex;
