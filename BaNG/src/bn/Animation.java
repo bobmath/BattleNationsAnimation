@@ -6,12 +6,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-public class Animation {
+public class Animation implements Comparable<Animation> {
 
 	private Timeline timeline;
 	private Bitmap bitmap;
 	private int numFrames, delay;
 	private double xPos, yPos;
+	private boolean loop;
 
 	public static Animation get(String name) throws IOException {
 		Timeline timeline = Timeline.get(name);
@@ -86,6 +87,10 @@ public class Animation {
 		}
 	}
 
+	public void setLoop(boolean loop) {
+		this.loop = loop;
+	}
+
 	public Rectangle2D.Double getBounds() {
 		Rectangle2D.Double bounds = timeline.getBounds();
 		bounds.x += xPos;
@@ -107,7 +112,11 @@ public class Animation {
 
 	public void drawFrame(int num, Graphics2D g) {
 		num -= delay;
-		if (num < 0 || num >= numFrames)
+		if (num < 0)
+			return;
+		if (loop)
+			num %= numFrames;
+		else if (num >= numFrames)
 			return;
 		AffineTransform oldTrans = g.getTransform();
 		g.translate(xPos, yPos);
@@ -116,6 +125,12 @@ public class Animation {
 		timeline.drawFrame(num, g);
 		g.setPaint(oldPaint);
 		g.setTransform(oldTrans);
+	}
+
+	@Override
+	public int compareTo(Animation that) {
+		return (this.yPos < that.yPos) ? -1
+				: (this.yPos > that.yPos) ? 1 : 0; 
 	}
 
 }

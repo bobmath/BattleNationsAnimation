@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -79,6 +82,7 @@ public class ImageGetter {
 	private JSpinner rangeCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
+	private JCheckBox dummyBox;
 
 	public void buildUI() {
 		frame = new JFrame("ImageGetter");
@@ -92,11 +96,11 @@ public class ImageGetter {
 			}
 		});
 		JScrollPane scroller = new JScrollPane(tree);
-		scroller.setPreferredSize(new Dimension(300, 400));
+		scroller.setPreferredSize(new Dimension(300, 500));
 		scroller.setMinimumSize(new Dimension(100, 100));
 
 		rightPanel = new JPanel(new BorderLayout());
-		rightPanel.setPreferredSize(new Dimension(300, 400));
+		rightPanel.setPreferredSize(new Dimension(400, 500));
 		animBox = new AnimationBox();
 		animBox.setMinimumSize(new Dimension(100, 100));
 		rightPanel.add(animBox);
@@ -156,7 +160,7 @@ public class ImageGetter {
 				animBox.setScale(value.doubleValue() / 100);
 			}
 		});
-		animPanel.add(new JLabel("Scale:"));
+		animPanel.add(new JLabel(" Scale:"));
 		animPanel.add(scaleCtrl);
 		animPanel.add(Box.createHorizontalGlue());
 		return animPanel;
@@ -227,11 +231,14 @@ public class ImageGetter {
 
 	private JPanel buildUnitControls(ActionListener update) {
 		unitPanel = new JPanel();
-		unitPanel.setLayout(new BoxLayout(unitPanel, BoxLayout.LINE_AXIS));
+		unitPanel.setLayout(new BoxLayout(unitPanel, BoxLayout.PAGE_AXIS));
+
+		JPanel row = new JPanel();
+		row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 		frontCtrl = new JComboBox<String>(new String[] { "Front", "Back" });
 		frontCtrl.addActionListener(update);
 		frontCtrl.setMaximumSize(frontCtrl.getPreferredSize());
-		unitPanel.add(frontCtrl);
+		row.add(frontCtrl);
 
 		weaponCtrl = new JComboBox<Weapon>();
 		weaponCtrl.addActionListener(new ActionListener() {
@@ -242,13 +249,28 @@ public class ImageGetter {
 				updateAnimation();
 			}
 		});
-		unitPanel.add(weaponCtrl);
+		row.add(weaponCtrl);
 
 		attackCtrl = new JComboBox<Attack>();
 		attackCtrl.addActionListener(update);
-		unitPanel.add(attackCtrl);
+		row.add(attackCtrl);
+		row.add(Box.createHorizontalGlue());
+		unitPanel.add(row);
 
-		unitPanel.add(new JLabel("Range:"));
+		row = new JPanel();
+		row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
+
+		dummyBox = new JCheckBox("Dummy");
+		dummyBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				updateAnimation();
+			}
+		});
+		row.add(dummyBox);
+
+		row.add(Box.createHorizontalStrut(10));
+		row.add(new JLabel("Range:"));
 		SpinnerModel range = new SpinnerNumberModel(1, 1, 5, 1);
 		rangeCtrl = new JSpinner(range);
 		rangeCtrl.setMaximumSize(rangeCtrl.getPreferredSize());
@@ -258,9 +280,10 @@ public class ImageGetter {
 				updateAnimation();
 			}
 		});
-		unitPanel.add(rangeCtrl);
+		row.add(rangeCtrl);
 
-		unitPanel.add(Box.createHorizontalGlue());
+		row.add(Box.createHorizontalGlue());
+		unitPanel.add(row);
 		unitPanel.setVisible(false);
 		return unitPanel;
 	}
@@ -350,7 +373,15 @@ public class ImageGetter {
 		double x = 0.5 * GRID_X * range;
 		double y = 0.5 * GRID_Y * range;
 		Animation anim = null;
-		List<Animation> list = null;
+		List<Animation> list = new ArrayList<Animation>();
+		if (dummyBox.isSelected()) {
+			Animation dummy = Animation.get("dummy_idle");
+			if (dummy != null) {
+				dummy.setLoop(true);
+				dummy.setPosition(x, GRID_Y - y);
+				list.add(dummy);
+			}
+		}
 
 		if (weaponCtrl.getSelectedIndex() <= 0) {
 			anim = front ? unit.getFrontAnimation()
@@ -368,9 +399,7 @@ public class ImageGetter {
 				if (hitAnim != null) {
 					hitAnim.setDelay(weap.getHitDelay());
 					hitAnim.setPosition(x, GRID_Y - y);
-					list = new ArrayList<Animation>();
-					if (!front) list.add(hitAnim);
-					list.add(anim);
+					list.add(hitAnim);
 					int end = anim.getEnd();
 					while (end < hitAnim.getEnd()) {
 						Animation idle = front ? unit.getFrontAnimation()
@@ -382,13 +411,14 @@ public class ImageGetter {
 						list.add(idle);
 						end = idle.getEnd();
 					}
-					if (front) list.add(hitAnim);
 				}
 			}
 		}
 
-		if (anim != null)
+		if (anim != null) {
 			anim.setPosition(-x, y + GRID_Y);
+			list.add(anim);
+		}
 		animBox.setAnimation(anim, list);
 	}
 

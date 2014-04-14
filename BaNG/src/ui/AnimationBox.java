@@ -14,6 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -216,6 +217,7 @@ public class AnimationBox extends JComponent {
 		else {
 			this.anims = (anims == null) ? new Animation[] { anim }
 			: anims.toArray(new Animation[anims.size()]);
+			Arrays.sort(this.anims);
 			for (Animation a : this.anims)
 				if (a.getEnd() > numFrames)
 					numFrames = a.getEnd();
