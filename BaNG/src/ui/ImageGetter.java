@@ -32,6 +32,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -47,6 +48,14 @@ import bn.Unit.Weapon;
 public class ImageGetter {
 
 	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				start();
+			}
+		});
+	}
+
+	private static void start() {
 		if (!GameFiles.init()) {
 			JOptionPane.showMessageDialog(null,
 					"Unable to find Battle Nations directory.",
