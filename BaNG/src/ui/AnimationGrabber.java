@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -191,8 +192,8 @@ public class AnimationGrabber {
 	private JPanel buildPlayControls() {
 		JPanel playPanel = new JPanel();
 		playPanel.setLayout(new BoxLayout(playPanel, BoxLayout.LINE_AXIS));
-		ImageIcon playIcon = new ImageIcon("images/play.png", "Play");
-		ImageIcon pauseIcon = new ImageIcon("images/pause.png", "Pause");
+		ImageIcon playIcon = createIcon("images/play.png", "Play");
+		ImageIcon pauseIcon = createIcon("images/pause.png", "Pause");
 		final JToggleButton pauseButton = new JToggleButton(pauseIcon);
 		pauseButton.setSelectedIcon(playIcon);
 		pauseButton.addActionListener(new ActionListener() {
@@ -237,6 +238,12 @@ public class AnimationGrabber {
 		playPanel.add(Box.createHorizontalGlue());
 		playPanel.add(exportBtn);
 		return playPanel;
+	}
+
+	private ImageIcon createIcon(String file, String desc) {
+		URL url = AnimationGrabber.class.getResource(file);
+		return (url == null) ? new ImageIcon(file, desc)
+		: new ImageIcon(url, desc);
 	}
 
 	private JPanel buildBuildingControls(ActionListener update) {

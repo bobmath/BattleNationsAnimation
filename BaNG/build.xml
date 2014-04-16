@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AnimationGrabber" default="compile">
+	<target name="compile">
+		<mkdir dir="build"/>
+		<javac srcdir="src" destdir="build">
+			<classpath location="external/javax.json-1.0.4.jar"/>
+		</javac>
+	</target>
+
+	<target name="dist" depends="compile">
+		<mkdir dir="dist"/>
+		<mkdir dir="build/ui/images"/>
+		<copy todir="build/ui/images">
+			<fileset dir="images"/>
+		</copy>
+		<jar jarfile="dist/AnimationGrabber.jar" basedir="build" compress="false"/>
+	</target>
+
+	<taskdef name="bundleapp"
+			classname="com.oracle.appbundler.AppBundlerTask"
+			classpath="../buildlib/appbundler-1.0.jar"/>
+
+	<target name="bundle" depends="dist">
+		<mkdir dir="bundle"/>
+		<copy file="../README.md" todir="bundle"/>
+		<copy file="../LICENSE" todir="bundle"/>
+		<bundleapp outputdirectory="bundle"
+				name="AnimationGrabber"
+				displayname="Animation Grabber"
+				identifier="ui.AnimationGrabber"
+				mainclassname="ui.AnimationGrabber">
+            <classpath file="dist/AnimationGrabber.jar"/>
+            <classpath file="external/javax.json-1.0.4.jar"/>
+        </bundleapp>
+	</target>
+
+	<target name="clean">
+		<delete dir="build"/>
+		<delete dir="dist"/>
+		<delete dir="bundle"/>
+	</target>
+</project>
