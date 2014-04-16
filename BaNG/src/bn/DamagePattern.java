@@ -67,6 +67,12 @@ public class DamagePattern implements Drawable {
 			targetArea = TargetSquare.convolution(targetArea, damageArea);
 		}
 
+		double max = 0;
+		for (TargetSquare sq : targetArea)
+			if (sq.getValue() > max)
+				max = sq.getValue();
+		max -= 1e-6; // fudge
+
 		for (TargetSquare sq : targetArea) {
 			int x = sq.getX();
 			int y = sq.getY();
@@ -83,13 +89,15 @@ public class DamagePattern implements Drawable {
 				int pct = (int) Math.round(100 * sq.getValue());
 				if (pct < 1) pct = 1;
 				pat.label = pct + "%";
-				pat.color = (x == 0 && y == 0) ? DARK_CYAN : Color.CYAN;
+				pat.color = (sq.getValue() >= max)
+						? DARK_CYAN : Color.CYAN;
 			}
 			else {
 				int dmg = (int) Math.round(damage * sq.getValue());
 				if (dmg < 1) dmg = 1;
 				pat.label = String.valueOf(dmg);
-				pat.color = (x == 0 && y == 0) ? REDDISH : Color.YELLOW;
+				pat.color = (sq.getValue() >= max)
+						? REDDISH : Color.YELLOW;
 			}
 
 			list.add(pat);
