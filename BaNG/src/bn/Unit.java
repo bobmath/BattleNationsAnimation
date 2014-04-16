@@ -166,6 +166,7 @@ public class Unit implements Comparable<Unit> {
 		private Attack[] attacks;
 		private int hitDelay;
 		private int minDamage, maxDamage;
+		private int rangeBonus;
 		protected Weapon() {
 			name = "(None)";
 			tag = "none";
@@ -189,6 +190,7 @@ public class Unit implements Comparable<Unit> {
 			if (json == null) return;
 			minDamage = json.getInt("base_damage_min", 0);
 			maxDamage = json.getInt("base_damage_max", 0);
+			rangeBonus = json.getInt("rangeBonus", 0);
 		}
 		public String getName() {
 			return name;
@@ -217,6 +219,9 @@ public class Unit implements Comparable<Unit> {
 		}
 		public int getMaxDamage() {
 			return maxDamage;
+		}
+		public int getRangeBonus() {
+			return rangeBonus;
 		}
 		public String toString() {
 			return name;
@@ -259,6 +264,12 @@ public class Unit implements Comparable<Unit> {
 		}
 		public double getAverageDamage(int rank) {
 			return 0.5*(getMinDamage(rank) + getMaxDamage(rank));
+		}
+		public int getMinRange() {
+			return ability.getMinRange();
+		}
+		public int getMaxRange() {
+			return ability.getMaxRange() + weapon.getRangeBonus();
 		}
 		public int getMinRank() {
 			return prereq == null ? 1

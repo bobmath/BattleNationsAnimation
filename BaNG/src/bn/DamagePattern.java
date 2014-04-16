@@ -30,41 +30,56 @@ public class DamagePattern implements Drawable {
 	private Color color;
 	private String label;
 
-	private DamagePattern(int x, int y, int start) {
+	private DamagePattern(int x, int y) {
 		xPos = x;
 		yPos = y;
-		startFrame = start;
-		endFrame = start + 40;
+		keep = true;
 	}
 
 	public static void buildAnimation(Attack attack, int pos, int range,
 			List<Drawable> list) {
 		boolean flip = pos < 0;
 		Ability abil = attack.getAbility();
-		GridPoint p = new GridPoint(0, pos + range);
-		if ("Weapon".equals(abil.getTargetType()))
-			p = p.translate(0, -range + (flip ? 1 : -1));
-		double damage = attack.getAverageDamage(attack.getMinRank());
-		TargetSquare[] targetArea = abil.getTargetArea();
-		if (targetArea  != null)
-			buildPattern(damage, targetArea, p, flip, abil.getRandomTarget(), list);
-	}
+		GridPoint center = new GridPoint(0, pos + range);
+		int yMin, yMax;
+		if ("Weapon".equals(abil.getTargetType())) {
+			yMin = -5;
+			yMax = -1;
+			center = center.translate(0, -range + (flip ? 1 : -1));
+		}
+		else {
+			yMin = -2;
+			yMax = Math.min(attack.getMaxRange() - 1, 2);
+		}
 
-	private static void buildPattern(double damage, TargetSquare[] area,
-			GridPoint center,
-			boolean flip, boolean random, List<Drawable> list) {
-		for (TargetSquare sq : area) {
+		double damage = abil.getRandomTarget() ? 0
+				: attack.getAverageDamage(attack.getMinRank());
+
+		TargetSquare[] targetArea = abil.getTargetArea();
+		TargetSquare[] damageArea = abil.getDamageArea();
+		if (targetArea  == null || targetArea.length == 1) {
+			if (damageArea != null)
+				targetArea = damageArea;
+			else if (targetArea == null)
+				targetArea = new TargetSquare[] { TargetSquare.SINGLE_TARGET };
+		}
+		else if (damageArea != null && damageArea.length != 1) {
+			targetArea = TargetSquare.convolution(targetArea, damageArea);
+		}
+
+		for (TargetSquare sq : targetArea) {
 			int x = sq.getX();
 			int y = sq.getY();
+			if (y < yMin || y > yMax || x < -4 || x > 4) continue;
+			if (y == yMin && (x == -4 || x == 4)) continue;
 			if (flip) {
 				x = -x;
 				y = -y;
 			}
 			GridPoint loc = center.translate(x, y);
-			DamagePattern pat = new DamagePattern(loc.x, loc.y, 0);
-			pat.keep = true;
+			DamagePattern pat = new DamagePattern(loc.x, loc.y);
 
-			if (random) {
+			if (damage == 0) {
 				int pct = (int) Math.round(100 * sq.getValue());
 				if (pct < 1) pct = 1;
 				pat.label = pct + "%";

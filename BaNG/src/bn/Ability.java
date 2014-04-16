@@ -1,6 +1,7 @@
 package bn;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class Ability {
 	private String frontAnimationName, backAnimationName;
 	private double damageFromWeapon, damageFromUnit;
 	private int damageBonus;
+	private int minRange, maxRange;
 	private int aoeDelay;
 	private String targetType;
 	private boolean randomTarget;
@@ -75,6 +77,8 @@ public class Ability {
 		damageBonus = stats.getInt("damage", 0);
 		damageFromWeapon = getDouble(stats, "damageFromWeapon", 1);
 		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
+		minRange = stats.getInt("minRange", 1);
+		maxRange = stats.getInt("maxRange", 1);
 
 		damageArea = initArea(stats.getJsonObject("damageArea"), false);
 		JsonObject targ = stats.getJsonObject("targetArea");
@@ -159,6 +163,14 @@ public class Ability {
 				* (1 + power * damageFromUnit / 50));
 	}
 
+	public int getMinRange() {
+		return minRange;
+	}
+
+	public int getMaxRange() {
+		return maxRange;
+	}
+
 	public int getAoeDelay() {
 		return aoeDelay;
 	}
@@ -179,7 +191,7 @@ public class Ability {
 		return (targetArea == null) ? null : targetArea.clone();
 	}
 
-	public static class TargetSquare {
+	public static class TargetSquare implements Comparable<TargetSquare> {
 		public static final TargetSquare SINGLE_TARGET = new TargetSquare();
 		private double value;
 		private int x, y, order;
@@ -199,6 +211,12 @@ public class Ability {
 				y = pos.getInt("y", 0);
 			}
 		}
+		private TargetSquare(TargetSquare a, TargetSquare b) {
+			x = a.x + b.x;
+			y = a.y + b.y;
+			order = a.order + b.order;
+			value = a.value * b.value;
+		}
 		public double getValue() {
 			return value;
 		}
@@ -210,6 +228,40 @@ public class Ability {
 		}
 		public int getOrder() {
 			return order;
+		}
+		@Override
+		public int compareTo(TargetSquare that) {
+			// sort ascending y, descending x, ascending order
+			if (this.y != that.y) return that.y - this.y;
+			if (this.x != that.x) return this.x - that.x;
+			return that.order - this.order;
+		}
+
+		public static TargetSquare[] convolution(TargetSquare[] in1,
+				TargetSquare[] in2) {
+			TargetSquare[] out = new TargetSquare[in1.length * in2.length];
+			int i = 0;
+			for (int j = 0; j < in1.length; j++)
+				for (int k = 0; k < in2.length; k++)
+					out[i++] = new TargetSquare(in1[j], in2[k]);
+
+			Arrays.sort(out);
+			i = 1;
+			TargetSquare a = out[0];
+			for (int j = 1; j < out.length; j++) {
+				TargetSquare b = out[j];
+				if (a.x == b.x && a.y == b.y)
+					a.value += b.value;
+				else
+					out[i++] = a = b;
+			}
+
+			if (i == out.length)
+				return out;
+			TargetSquare[] out2 = new TargetSquare[i];
+			for (int j = 0; j < i; j++)
+				out2[j] = out[j];
+			return out2;
 		}
 	}
 
