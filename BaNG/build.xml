@@ -28,7 +28,8 @@
 				name="AnimationGrabber"
 				displayname="Animation Grabber"
 				identifier="ui.AnimationGrabber"
-				mainclassname="ui.AnimationGrabber">
+				mainclassname="ui.AnimationGrabber"
+				icon="icons/GenericApp.icns">
             <classpath file="dist/AnimationGrabber.jar"/>
             <classpath file="external/javax.json-1.0.4.jar"/>
         </bundleapp>
