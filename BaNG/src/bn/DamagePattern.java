@@ -43,7 +43,7 @@ public class DamagePattern implements Drawable {
 		GridPoint center = new GridPoint(0, pos + range);
 		int yMin, yMax;
 		if ("Weapon".equals(abil.getTargetType())) {
-			yMin = -5;
+			yMin = Math.max(-attack.getMaxRange(), -5);
 			yMax = -1;
 			center = center.translate(0, -range + (flip ? 1 : -1));
 		}
