@@ -1,5 +1,6 @@
 package bn;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -19,6 +20,7 @@ public class DamagePattern implements Drawable {
 			new int[] { GridPoint.GRID_Y, 0, -GridPoint.GRID_Y, 0 }, 4);
 	private static final AffineTransform SKEW =
 			new AffineTransform(1, 0.5, -1, 0.5, 0, 0);
+	private static final BasicStroke STROKE = new BasicStroke(2);
 	private static final Color REDDISH = new Color(0xff, 0x4c, 0x4c);
 	private static final Color DARK_CYAN = new Color(0x00, 0xcc, 0xcc);
 
@@ -90,6 +92,7 @@ public class DamagePattern implements Drawable {
 		g.setColor(color);
 		g.fillPolygon(DIAMOND);
 		g.setColor(Color.BLACK);
+		g.setStroke(STROKE);
 		g.drawPolygon(DIAMOND);
 		g.setFont(FONT);
 		Rectangle2D bounds = g.getFontMetrics().getStringBounds(label, g);
