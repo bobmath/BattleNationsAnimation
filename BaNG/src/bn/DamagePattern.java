@@ -77,7 +77,7 @@ public class DamagePattern implements Drawable {
 			int x = sq.getX();
 			int y = sq.getY();
 			if (y < yMin || y > yMax || x < -4 || x > 4) continue;
-			if (y == yMin && (x == -4 || x == 4)) continue;
+			if ((y == yMin || y == yMax) && (x == -4 || x == 4)) continue;
 			if (flip) {
 				x = -x;
 				y = -y;
