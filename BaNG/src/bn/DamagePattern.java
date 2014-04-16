@@ -44,7 +44,7 @@ public class DamagePattern implements Drawable {
 		int yMin, yMax;
 		if ("Weapon".equals(abil.getTargetType())) {
 			yMin = Math.max(-attack.getMaxRange(), -5);
-			yMax = -1;
+			yMax = 0;
 			center = center.translate(0, -range + (flip ? 1 : -1));
 		}
 		else {
