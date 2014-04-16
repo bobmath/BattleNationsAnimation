@@ -150,10 +150,10 @@ public class AnimationBox extends JComponent {
 		Graphics2D g2 = (Graphics2D) g;
 		Dimension dim = getSize();
 		Rectangle2D.Double bounds = getAnimBounds(-1);
-		drawFrame(tick, g2, bounds, dim.width, dim.height, true);
+		drawFrame(tick, g2, bounds, dim, true);
 	}
 
-	private Rectangle2D.Double getAnimBounds(int frame) {
+	public Rectangle2D.Double getAnimBounds(int frame) {
 		Rectangle2D.Double bounds = null;
 		for (Drawable obj : objects) {
 			Rectangle2D.Double bnd = frame < 0 ? obj.getBounds()
@@ -187,8 +187,15 @@ public class AnimationBox extends JComponent {
 		return bounds;
 	}
 
+	public static Dimension roundSize(Rectangle2D.Double bounds) {
+		if (bounds == null) return null;
+		return new Dimension(
+				(int) Math.ceil(bounds.width) + 2,
+				(int) Math.ceil(bounds.height) + 2);
+	}
+
 	private void drawFrame(int frame, Graphics2D g,
-			Rectangle2D.Double bounds, int width, int height,
+			Rectangle2D.Double bounds, Dimension dim,
 			boolean transparent) {
 		BufferedImage im = backgroundImage;
 		if (im == null) {
@@ -197,13 +204,13 @@ public class AnimationBox extends JComponent {
 				if (bg == null)
 					bg = defaultColor;
 				g.setColor(bg);
-				g.fillRect(0, 0, width, height);
+				g.fillRect(0, 0, dim.width, dim.height);
 			}
 		}
 
 		if (bounds == null) return;
-		g.translate(0.5*(width - bounds.width) - bounds.x,
-				0.5*(height - bounds.height) - bounds.y);
+		g.translate(0.5*(dim.width - bounds.width) - bounds.x,
+				0.5*(dim.height - bounds.height) - bounds.y);
 		g.scale(scale, scale);
 
 		if (im != null)
@@ -348,12 +355,12 @@ public class AnimationBox extends JComponent {
 	public void writeGif(File file) throws IOException {
 		Rectangle2D.Double bounds = getAnimBounds(-1);
 		if (bounds == null) return;
-		int width = (int) Math.ceil(bounds.width) + 2;
-		int height = (int) Math.ceil(bounds.height) + 2;
-		GifAnimation out = new GifAnimation(width, height, numFrames, DELAY);
+		Dimension dim = roundSize(bounds);
+		GifAnimation out = new GifAnimation(dim.width, dim.height,
+				numFrames, DELAY);
 		for (int i = 0; i < numFrames; i++) {
 			Graphics2D g = out.getFrame(i).createGraphics();
-			drawFrame(i, g, bounds, width, height, false);
+			drawFrame(i, g, bounds, dim, false);
 		}
 		file.delete();
 		out.write(file);
@@ -363,14 +370,13 @@ public class AnimationBox extends JComponent {
 		int num = tick;
 		Rectangle2D.Double bounds = getAnimBounds(num);
 		if (bounds == null) return;
-		int width = (int) Math.ceil(bounds.width) + 2;
-		int height = (int) Math.ceil(bounds.height) + 2;
+		Dimension dim = roundSize(bounds);
 		int type = (backgroundImage == null && backgroundColor == null
 				|| backgroundImage.getTransparency() != Transparency.OPAQUE)
 				? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-		BufferedImage frame = new BufferedImage(width, height, type);
+		BufferedImage frame = new BufferedImage(dim.width, dim.height, type);
 		Graphics2D g = frame.createGraphics();
-		drawFrame(num, g, bounds, width, height, true);
+		drawFrame(num, g, bounds, dim, true);
 		file.delete();
 		ImageIO.write(frame, "png", file);
 	}

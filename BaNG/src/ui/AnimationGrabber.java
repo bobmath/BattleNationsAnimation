@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.SpinnerModel;
@@ -87,14 +89,17 @@ public class AnimationGrabber {
 	private AnimationBox animBox;
 	private JTree tree;
 	private JPanel rightPanel;
+	private JTextField sizeBox;
+
 	private JPanel unitPanel;
 	private JComboBox<String> frontCtrl;
 	private JComboBox<Weapon> weaponCtrl;
 	private JComboBox<Attack> attackCtrl;
+	private JCheckBox dummyBox, damageBox;
+
 	private JSpinner rangeCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
-	private JCheckBox dummyBox, damageBox;
 
 	public void buildUI() {
 		frame = new JFrame("AnimationGrabber");
@@ -170,10 +175,16 @@ public class AnimationGrabber {
 			public void stateChanged(ChangeEvent e) {
 				Number value = (Number) scaleCtrl.getValue();
 				animBox.setScale(value.doubleValue() / 100);
+				updateSize();
 			}
 		});
 		animPanel.add(new JLabel(" Scale:"));
 		animPanel.add(scaleCtrl);
+
+		sizeBox = new JTextField(6);
+		sizeBox.setEditable(false);
+		sizeBox.setMaximumSize(sizeBox.getPreferredSize());
+		animPanel.add(sizeBox);
 		animPanel.add(Box.createHorizontalGlue());
 		return animPanel;
 	}
@@ -374,6 +385,7 @@ public class AnimationGrabber {
 					"Unable to load animation",
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
+		updateSize();
 	}
 
 	private void buildUnitAnimation(Unit unit) throws IOException {
@@ -443,6 +455,14 @@ public class AnimationGrabber {
 			list.add(idle);
 			animEnd = idle.getEndFrame();
 		}
+	}
+
+	private void updateSize() {
+		Dimension dim = AnimationBox.roundSize(animBox.getAnimBounds(-1));
+		if (dim == null)
+			sizeBox.setText("");
+		else
+			sizeBox.setText(dim.width + "x" + dim.height);
 	}
 
 	public void showUI() {
