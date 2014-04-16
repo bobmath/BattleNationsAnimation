@@ -47,7 +47,7 @@ import bn.Unit;
 import bn.Unit.Attack;
 import bn.Unit.Weapon;
 
-public class ImageGetter {
+public class AnimationGrabber {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -74,12 +74,12 @@ public class ImageGetter {
 					"Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		ImageGetter ui = new ImageGetter();
+		AnimationGrabber ui = new AnimationGrabber();
 		ui.buildUI();
 		ui.showUI();
 	}
 
-	public ImageGetter() {
+	public AnimationGrabber() {
 	}
 
 	private Object source;
@@ -97,7 +97,7 @@ public class ImageGetter {
 	private JCheckBox dummyBox, damageBox;
 
 	public void buildUI() {
-		frame = new JFrame("ImageGetter");
+		frame = new JFrame("AnimationGrabber");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		tree = new JTree(AnimationTree.buildTree());
