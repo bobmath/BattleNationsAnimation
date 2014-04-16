@@ -25,6 +25,7 @@ public class Ability {
 	private String targetType;
 	private boolean randomTarget;
 	private TargetSquare[] targetArea, damageArea;
+	private Map<String,Prerequisites> prereqs;
 
 	public static void load() throws IOException {
 		abilities = new HashMap<String,Ability>();
@@ -56,6 +57,7 @@ public class Ability {
 		if (name == null) name = tag;
 		initAnimation(json, dmgAnim);
 		initStats(json.getJsonObject("stats"));
+		initPrereqs(json.getJsonObject("reqs"));
 	}
 
 	private void initAnimation(JsonObject json, JsonObject dmgAnim) {
@@ -82,6 +84,18 @@ public class Ability {
 			aoeDelay = (int) Math.round(
 					getDouble(targ, "aoeOrderDelay", 0) * 20);
 			targetArea = initArea(targ, randomTarget);
+		}
+	}
+
+	private void initPrereqs(JsonObject json) {
+		if (json == null || json.isEmpty()) return;
+		prereqs = new HashMap<String,Prerequisites>();
+		for (Map.Entry<String,JsonValue> item : json.entrySet()) {
+			JsonObject reqs = (JsonObject) item.getValue();
+			Prerequisites pre = Prerequisites.create(
+					reqs.getJsonObject("prereq"));
+			if (pre != null)
+				prereqs.put(item.getKey(), pre);
 		}
 	}
 
@@ -135,6 +149,10 @@ public class Ability {
 		return Animation.get(backAnimationName);
 	}
 
+	public Prerequisites getPrereqs(String unit) {
+		return (prereqs == null) ? null : prereqs.get(unit);
+	}
+
 	public int adjustDamage(int damage, int power) {
 		return (int) ((Math.floor(damage * damageFromWeapon)
 				+ damageBonus)
@@ -154,16 +172,20 @@ public class Ability {
 	}
 
 	public TargetSquare[] getDamageArea() {
-		return damageArea.clone();
+		return (damageArea == null) ? null : damageArea.clone();
 	}
 
 	public TargetSquare[] getTargetArea() {
-		return targetArea.clone();
+		return (targetArea == null) ? null : targetArea.clone();
 	}
 
 	public static class TargetSquare {
+		public static final TargetSquare SINGLE_TARGET = new TargetSquare();
 		private double value;
 		private int x, y, order;
+		private TargetSquare() {
+			value = 1;
+		}
 		protected TargetSquare(JsonObject json, double weight) {
 			if (weight == 0) {
 				value = getDouble(json, "damagePercent", 0) / 100;

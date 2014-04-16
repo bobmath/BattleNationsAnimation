@@ -40,6 +40,8 @@ import javax.swing.event.TreeSelectionListener;
 
 import bn.Animation;
 import bn.Building;
+import bn.DamagePattern;
+import bn.Drawable;
 import bn.GameFiles;
 import bn.Unit;
 import bn.Unit.Attack;
@@ -49,6 +51,7 @@ public class ImageGetter {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				start();
 			}
@@ -91,7 +94,7 @@ public class ImageGetter {
 	private JSpinner rangeCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
-	private JCheckBox dummyBox;
+	private JCheckBox dummyBox, damageBox;
 
 	public void buildUI() {
 		frame = new JFrame("ImageGetter");
@@ -270,12 +273,13 @@ public class ImageGetter {
 		row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 
 		dummyBox = new JCheckBox("Dummy");
-		dummyBox.addItemListener(new ItemListener() {
+		ItemListener itemListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				updateAnimation();
 			}
-		});
+		};
+		dummyBox.addItemListener(itemListener);
 		row.add(dummyBox);
 
 		row.add(Box.createHorizontalStrut(10));
@@ -290,6 +294,11 @@ public class ImageGetter {
 			}
 		});
 		row.add(rangeCtrl);
+
+		row.add(Box.createHorizontalStrut(8));
+		damageBox = new JCheckBox("Damage");
+		damageBox.addItemListener(itemListener);
+		row.add(damageBox);
 
 		row.add(Box.createHorizontalGlue());
 		unitPanel.add(row);
@@ -345,6 +354,7 @@ public class ImageGetter {
 	}
 
 	private void updateAnimation() {
+		animBox.setAnimation(null);
 		try {
 			if (source instanceof Unit) {
 				buildUnitAnimation((Unit) source);
@@ -358,9 +368,6 @@ public class ImageGetter {
 			else if (source instanceof String) {
 				animBox.setAnimation(Animation.get((String) source));
 			}
-			else {
-				animBox.setAnimation(null);
-			}
 		}
 		catch (IOException e) {
 			JOptionPane.showMessageDialog(null,
@@ -369,25 +376,20 @@ public class ImageGetter {
 		}
 	}
 
-	private static final int GRID_X = 100;
-	private static final int GRID_Y = 50;
-
 	private void buildUnitAnimation(Unit unit) throws IOException {
 		boolean front = "Front".equals(frontCtrl.getSelectedItem());
-		double range = ((Number) rangeCtrl.getValue()).doubleValue();
-		if (front)
-			range = -0.5 - range;
-		else
-			range += 0.5;
-		double x = 0.5 * GRID_X * range;
-		double y = 0.5 * GRID_Y * range;
+		int range = ((Number) rangeCtrl.getValue()).intValue() + 1;
+		if (!front)
+			range = -range;
+		int pos = -range / 2;
 		Animation anim = null;
-		List<Animation> list = new ArrayList<Animation>();
+		List<Drawable> list = new ArrayList<Drawable>();
+
 		if (dummyBox.isSelected()) {
 			Animation dummy = Animation.get("dummy_idle");
 			if (dummy != null) {
 				dummy.setLoop(true);
-				dummy.setPosition(x, GRID_Y - y);
+				dummy.setGridPosition(0, pos + range);
 				list.add(dummy);
 			}
 		}
@@ -403,32 +405,44 @@ public class ImageGetter {
 
 			if (anim != null && attackCtrl.getSelectedIndex() > 0) {
 				Attack attack = (Attack) attackCtrl.getSelectedItem();
+
+				if (damageBox.isSelected())
+					DamagePattern.buildAnimation(attack, pos, range, list);
+
 				Animation hitAnim = front ? attack.getBackAnimation()
 						: attack.getFrontAnimation();
 				if (hitAnim != null) {
 					hitAnim.setDelay(weap.getHitDelay());
-					hitAnim.setPosition(x, GRID_Y - y);
+					hitAnim.setGridPosition(0, pos + range);
 					list.add(hitAnim);
-					int end = anim.getEnd();
-					while (end < hitAnim.getEnd()) {
-						Animation idle = front ? unit.getFrontAnimation()
-								: unit.getBackAnimation();
-						if (idle.getNumFrames() <= 0) break;
-						idle.setPosition(-x, y + GRID_Y);
-						idle.setDelay(end);
-						idle.earlyStop(hitAnim.getEnd());
-						list.add(idle);
-						end = idle.getEnd();
-					}
+					padAnimation(unit, pos, anim.getEndFrame(), list);
 				}
 			}
 		}
 
 		if (anim != null) {
-			anim.setPosition(-x, y + GRID_Y);
+			anim.setGridPosition(0, pos);
 			list.add(anim);
 		}
 		animBox.setAnimation(anim, list);
+	}
+
+	private void padAnimation(Unit unit, int pos, int animEnd,
+			List<Drawable> list) throws IOException {
+		int hitEnd = 0;
+		for (Drawable obj : list)
+			if (obj.getEndFrame() > hitEnd)
+				hitEnd = obj.getEndFrame();
+		while (animEnd < hitEnd) {
+			Animation idle = pos > 0 ? unit.getBackAnimation()
+					: unit.getFrontAnimation();
+			if (idle == null || idle.getNumFrames() <= 0) break;
+			idle.setGridPosition(0, pos);
+			idle.setDelay(animEnd);
+			idle.earlyStop(hitEnd);
+			list.add(idle);
+			animEnd = idle.getEndFrame();
+		}
 	}
 
 	public void showUI() {

@@ -145,12 +145,18 @@ public class Unit implements Comparable<Unit> {
 	}
 
 	public class Rank {
-		int power;
+		private int power;
+		private Prerequisites prereq;
 		protected Rank(JsonObject json) {
 			power = json.getInt("power", 0);
+			prereq = Prerequisites.create(
+					json.getJsonObject("prereqsForLevel"));
 		}
 		public int getPower() {
 			return power;
+		}
+		public int getMinLevel() {
+			return prereq == null ? 0 : prereq.getMinLevel();
 		}
 	}
 
@@ -220,11 +226,13 @@ public class Unit implements Comparable<Unit> {
 	public class Attack {
 		private Ability ability;
 		private Weapon weapon;
+		private Prerequisites prereq;
 		protected Attack(String tag, Weapon weapon) {
 			ability = Ability.get(tag);
 			if (ability == null)
 				ability = Ability.NO_ABILITY;
 			this.weapon = weapon;
+			prereq = ability.getPrereqs(Unit.this.getTag());
 		}
 		public String getName() {
 			return ability.getName();
@@ -251,6 +259,10 @@ public class Unit implements Comparable<Unit> {
 		}
 		public double getAverageDamage(int rank) {
 			return 0.5*(getMinDamage(rank) + getMaxDamage(rank));
+		}
+		public int getMinRank() {
+			return prereq == null ? 1
+					: Math.max(prereq.getMinRank(), 1);
 		}
 		public Ability getAbility() {
 			return ability;

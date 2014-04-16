@@ -1,12 +1,10 @@
 package bn;
 
 import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-public class Animation implements Comparable<Animation> {
+public class Animation implements Drawable, Cloneable {
 
 	private Timeline timeline;
 	private Bitmap bitmap;
@@ -62,6 +60,12 @@ public class Animation implements Comparable<Animation> {
 		yPos = y;
 	}
 
+	public void setGridPosition(int x, int y) {
+		GridPoint p = new GridPoint(x, y);
+		xPos = p.x;
+		yPos = p.y + GridPoint.GRID_Y;
+	}
+
 	public int getDelay() {
 		return delay;
 	}
@@ -70,7 +74,8 @@ public class Animation implements Comparable<Animation> {
 		this.delay = delay;
 	}
 
-	public int getEnd() {
+	@Override
+	public int getEndFrame() {
 		return numFrames + delay;
 	}
 
@@ -91,6 +96,7 @@ public class Animation implements Comparable<Animation> {
 		this.loop = loop;
 	}
 
+	@Override
 	public Rectangle2D.Double getBounds() {
 		Rectangle2D.Double bounds = timeline.getBounds();
 		bounds.x += xPos;
@@ -98,6 +104,7 @@ public class Animation implements Comparable<Animation> {
 		return bounds;
 	}
 
+	@Override
 	public Rectangle2D.Double getBounds(int frame) {
 		frame -= delay;
 		if (frame < 0 || frame >= numFrames)
@@ -110,6 +117,7 @@ public class Animation implements Comparable<Animation> {
 		return bounds;
 	}
 
+	@Override
 	public void drawFrame(int num, Graphics2D g) {
 		num -= delay;
 		if (num < 0)
@@ -118,19 +126,24 @@ public class Animation implements Comparable<Animation> {
 			num %= numFrames;
 		else if (num >= numFrames)
 			return;
-		AffineTransform oldTrans = g.getTransform();
 		g.translate(xPos, yPos);
-		Paint oldPaint = g.getPaint();
 		g.setPaint(bitmap.getTexture());
 		timeline.drawFrame(num, g);
-		g.setPaint(oldPaint);
-		g.setTransform(oldTrans);
 	}
 
 	@Override
-	public int compareTo(Animation that) {
-		return (this.yPos < that.yPos) ? -1
-				: (this.yPos > that.yPos) ? 1 : 0; 
+	public double getSortPosition() {
+		return yPos;
+	}
+
+	@Override
+	public Animation clone() {
+		try {
+			return (Animation) super.clone();
+		}
+		catch (CloneNotSupportedException e) {
+			throw new RuntimeException("Can't happen", e);
+		}
 	}
 
 }

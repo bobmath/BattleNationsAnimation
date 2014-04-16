@@ -10,11 +10,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -31,15 +33,28 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import util.GifAnimation;
 import bn.Animation;
+import bn.Drawable;
 
 public class AnimationBox extends JComponent {
+
 	private static final long serialVersionUID = 1L;
 	private static final Color defaultColor =
 			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
 	private static final int DELAY = 5;
 
+	private static final Comparator<Drawable> drawOrder =
+			new Comparator<Drawable>() {
+		@Override
+		public int compare(Drawable obj1, Drawable obj2) {
+			double pos1 = obj1.getSortPosition();
+			double pos2 = obj2.getSortPosition();
+			return (pos1 < pos2) ? -1
+					: (pos1 > pos2) ? 1 : 0;
+		}
+	};
+
 	private Animation anim;
-	private Animation[] anims;
+	private Drawable[] objects;
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
@@ -50,7 +65,7 @@ public class AnimationBox extends JComponent {
 	private JSlider frameSlider;
 
 	public AnimationBox() {
-		anims = new Animation[0];
+		objects = new Drawable[0];
 		timer = new Timer(50, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -140,14 +155,14 @@ public class AnimationBox extends JComponent {
 
 	private Rectangle2D.Double getAnimBounds(int frame) {
 		Rectangle2D.Double bounds = null;
-		for (Animation a : anims) {
-			Rectangle2D.Double b = frame < 0 ? a.getBounds()
-					: a.getBounds(frame);
-			if (b != null) {
+		for (Drawable obj : objects) {
+			Rectangle2D.Double bnd = frame < 0 ? obj.getBounds()
+					: obj.getBounds(frame);
+			if (bnd != null) {
 				if (bounds == null)
-					bounds = b;
+					bounds = bnd;
 				else
-					Rectangle2D.union(bounds, b, bounds);
+					Rectangle2D.union(bounds, bnd, bounds);
 			}
 		}
 
@@ -197,30 +212,35 @@ public class AnimationBox extends JComponent {
 		// This makes drawing the background image outrageously slow
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
 
-		for (Animation a : anims)
-			a.drawFrame(frame, g);
+		AffineTransform oldTrans = g.getTransform();
+		for (Drawable obj : objects) {
+			obj.drawFrame(frame, g);
+			g.setTransform(oldTrans);
+		}
 	}
 
 	public void setAnimation(Animation anim) {
 		setAnimation(anim, null);
 	}
 
-	public void setAnimation(Animation anim, List<Animation> anims) {
+	public void setAnimation(Animation anim, List<Drawable> objects) {
 		timer.stop();
 		tick = 0;
 		this.anim = anim;
 		numFrames = 0;
 		if (anim == null) {
-			this.anims = new Animation[0];
+			this.objects = new Drawable[0];
 		}
 		else {
-			this.anims = (anims == null) ? new Animation[] { anim }
-			: anims.toArray(new Animation[anims.size()]);
-			Arrays.sort(this.anims);
-			for (Animation a : this.anims)
-				if (a.getEnd() > numFrames)
-					numFrames = a.getEnd();
+			this.objects = (objects == null) ? new Drawable[] { anim }
+			: objects.toArray(new Drawable[objects.size()]);
+			Arrays.sort(this.objects, drawOrder);
+			for (Drawable obj : this.objects)
+				if (obj.getEndFrame() > numFrames)
+					numFrames = obj.getEndFrame();
 			if (frameSlider != null) {
 				frameSlider.setMinimum(0);
 				frameSlider.setMaximum(numFrames <= 1 ? 1 : numFrames - 1);
