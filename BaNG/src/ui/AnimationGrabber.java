@@ -389,7 +389,7 @@ public class AnimationGrabber {
 
 	private void buildUnitAnimation(Unit unit) throws IOException {
 		boolean front = "Front".equals(frontCtrl.getSelectedItem());
-		int range = ((Number) rangeCtrl.getValue()).intValue() + 1;
+		int range = updateRange() + 1;
 		if (!front)
 			range = -range;
 		int pos = -range / 2;
@@ -462,6 +462,19 @@ public class AnimationGrabber {
 			sizeBox.setText("");
 		else
 			sizeBox.setText(dim.width + "x" + dim.height);
+	}
+
+	private int updateRange() {
+		Attack attack = (Attack) attackCtrl.getSelectedItem();
+		int range = ((Number) rangeCtrl.getValue()).intValue();
+		int min = attack.getMinRange();
+		int max = attack.getMaxRange();
+		if (min > 0 && min <= max) {
+			if (range < min) range = min;
+			if (range > max) range = max;
+			rangeCtrl.setModel(new SpinnerNumberModel(range, min, max, 1));
+		}
+		return range;
 	}
 
 	public void showUI() {

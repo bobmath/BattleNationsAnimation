@@ -51,6 +51,8 @@ public class Ability {
 	private Ability() {
 		tag = "none";
 		name = "(None)";
+		minRange = 1;
+		maxRange = 5;
 	}
 
 	private Ability(String tag, JsonObject json, JsonObject dmgAnim) {
