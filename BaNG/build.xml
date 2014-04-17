@@ -2,7 +2,9 @@
 <project name="AnimationGrabber" default="compile">
 	<target name="compile">
 		<mkdir dir="build"/>
-		<javac srcdir="src" destdir="build">
+		<javac srcdir="src" destdir="build"
+				target="1.7" source="1.7"
+				includeAntRuntime="false">
 			<classpath location="external/javax.json-1.0.4.jar"/>
 		</javac>
 	</target>
@@ -22,17 +24,23 @@
 
 	<target name="bundle" depends="dist">
 		<mkdir dir="bundle"/>
-		<copy file="../README.md" todir="bundle"/>
-		<copy file="../LICENSE" todir="bundle"/>
+		<copy file="../README.md" tofile="bundle/README.txt"/>
+		<copy file="../LICENSE" tofile="bundle/LICENSE.txt"/>
 		<bundleapp outputdirectory="bundle"
 				name="AnimationGrabber"
 				displayname="Animation Grabber"
 				identifier="ui.AnimationGrabber"
 				mainclassname="ui.AnimationGrabber"
 				icon="icons/GenericApp.icns">
-            <classpath file="dist/AnimationGrabber.jar"/>
-            <classpath file="external/javax.json-1.0.4.jar"/>
-        </bundleapp>
+			<classpath file="dist/AnimationGrabber.jar"/>
+			<classpath file="external/javax.json-1.0.4.jar"/>
+		</bundleapp>
+		<zip destfile="dist/AnimationGrabber.zip"
+				level="9">
+			<zipfileset dir="bundle" excludes="**/JavaAppLauncher"/>
+			<zipfileset dir="bundle" includes="**/JavaAppLauncher"
+					filemode="0755"/>
+		</zip>
 	</target>
 
 	<target name="clean">

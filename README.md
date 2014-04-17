@@ -4,7 +4,8 @@ AnimationGrabber for the game BattleNations.
 
 Requires a Mac install of the game, available free in the App store.
 
-Also requires a JDK or JRE installation: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+Also requires a JDK or JRE installation, version 7 or higher.
+http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 Many thanks to Drullkus.
 
