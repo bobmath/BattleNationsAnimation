@@ -9,6 +9,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import bn.Ability.TargetSquare;
 import util.FileFormatException;
 
 public class Unit implements Comparable<Unit> {
@@ -274,6 +275,17 @@ public class Unit implements Comparable<Unit> {
 		public int getMinRank() {
 			return prereq == null ? 1
 					: Math.max(prereq.getMinRank(), 1);
+		}
+		public int getHitDelay() {
+			TargetSquare[] area = ability.getTargetArea();
+			int aoeDelay = ability.getAoeDelay();
+			if (area != null && aoeDelay != 0) {
+				for (TargetSquare sq : area)
+					if (sq.getX() == 0)
+						return weapon.getHitDelay()
+								+ aoeDelay * (sq.getOrder() - 1);
+			}
+			return weapon.getHitDelay();
 		}
 		public Ability getAbility() {
 			return ability;
