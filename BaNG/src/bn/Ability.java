@@ -23,6 +23,7 @@ public class Ability {
 	private double damageFromWeapon, damageFromUnit;
 	private int damageBonus;
 	private int minRange, maxRange;
+	private boolean capture;
 	private int aoeDelay;
 	private String targetType;
 	private boolean randomTarget;
@@ -81,6 +82,7 @@ public class Ability {
 		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
 		minRange = stats.getInt("minRange", 1);
 		maxRange = stats.getInt("maxRange", 1);
+		capture = stats.getBoolean("capture");
 
 		damageArea = initArea(stats.getJsonObject("damageArea"), false);
 		JsonObject targ = stats.getJsonObject("targetArea");
@@ -183,6 +185,10 @@ public class Ability {
 
 	public String getTargetType() {
 		return targetType;
+	}
+
+	public boolean getCapture() {
+		return capture;
 	}
 
 	public TargetSquare[] getDamageArea() {
