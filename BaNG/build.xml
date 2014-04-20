@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AnimationGrabber" default="compile">
+	<loadproperties srcfile="src/ui/AnimationGrabber.java">
+		<filterchain>
+			<linecontains>
+				<contains value="String VERSION ="/>
+			</linecontains>
+			<replaceregex pattern="^.*String " replace=""/>
+			<replaceregex pattern='[ ";]' replace="" flags="g"/>
+		</filterchain>
+	</loadproperties>
+
 	<target name="compile">
 		<mkdir dir="build"/>
 		<javac srcdir="src" destdir="build"
@@ -35,7 +45,7 @@
 			<classpath file="dist/AnimationGrabber.jar"/>
 			<classpath file="external/javax.json-1.0.4.jar"/>
 		</bundleapp>
-		<zip destfile="dist/AnimationGrabber.zip"
+		<zip destfile="dist/AnimationGrabber-Mac-${VERSION}.zip"
 				level="9">
 			<zipfileset dir="bundle" excludes="**/JavaAppLauncher"/>
 			<zipfileset dir="bundle" includes="**/JavaAppLauncher"
@@ -43,9 +53,38 @@
 		</zip>
 	</target>
 
+	<target name="deps" depends="dist">
+		<mkdir dir="jsonp"/>
+		<unjar src="external/javax.json-1.0.4.jar" dest="jsonp"/>
+		<delete dir="jsonp/META-INF"/>
+		<jar jarfile="dist/AnimationGrabberDeps.jar">
+			<fileset dir="build"/>
+			<fileset dir="jsonp"/>
+		</jar>
+	</target>
+
+	<property name="launch4j.dir" location="../buildlib/launch4j"/>
+
+	<taskdef name="launch4j"
+			classname="net.sf.launch4j.ant.Launch4jTask"
+			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar"/>
+
+	<target name="exe" depends="deps">
+		<mkdir dir="launch4j"/>
+		<copy file="../README.md" tofile="launch4j/README.txt"/>
+		<copy file="../LICENSE" tofile="launch4j/LICENSE.txt"/>
+		<launch4j configFile="launch4j.xml"/>
+		<zip destfile="dist/AnimationGrabber-Win-${VERSION}.zip"
+				basedir="launch4j" level="9"/>
+	</target>
+
+	<target name="all" depends="bundle,exe"/>
+
 	<target name="clean">
 		<delete dir="build"/>
 		<delete dir="dist"/>
+		<delete dir="jsonp"/>
 		<delete dir="bundle"/>
+		<delete dir="launch4j"/>
 	</target>
 </project>

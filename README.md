@@ -2,7 +2,8 @@ BattleNationsAnimation
 ======================
 AnimationGrabber for the game BattleNations.
 
-Requires a Mac install of the game, available free in the App store.
+Requires a local install of the game on Mac (available free in the App store)
+or Windows (available through Steam).
 
 Also requires a JDK or JRE installation, version 7 or higher.
 http://www.oracle.com/technetwork/java/javase/downloads/index.html

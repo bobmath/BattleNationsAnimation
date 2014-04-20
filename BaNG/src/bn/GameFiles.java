@@ -25,17 +25,20 @@ public class GameFiles {
 
 	public static boolean init() {
 		initialized = true;
-		switch (System.getProperty("os.name"))
-		{
-		case "Mac OS X":
-			String homeDir = System.getProperty("user.home");
-			if (homeDir == null) return false;
-			updateDir = new File(homeDir + "/Library/Containers/com.z2live.battlenations-mac/Data/Library/Caches/jujulib/remoteData");
+		String os = System.getProperty("os.name");
+		String homeDir = System.getProperty("user.home");
+		if (os == null || homeDir == null) return false;
+		if (os.equals("Mac OS X")) {
 			installDir = new File("/Applications/BattleNations.app/Contents/Resources/bundle");
-			break;
-		default:
-			return false;
+			updateDir = new File(homeDir + "/Library/Containers/com.z2live.battlenations-mac/Data/Library/Caches/jujulib/remoteData");
 		}
+		else if (os.startsWith("Windows")) {
+			// TODO: find real install dir
+			installDir = new File("C:/Program Files/BattleNations");
+			updateDir = new File(homeDir);
+		}
+		else
+			return false;
 		return updateDir.isDirectory() && installDir.isDirectory();
 	}
 
