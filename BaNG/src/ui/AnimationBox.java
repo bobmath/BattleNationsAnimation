@@ -371,9 +371,9 @@ public class AnimationBox extends JComponent {
 		Rectangle2D.Double bounds = getAnimBounds(num);
 		if (bounds == null) return;
 		Dimension dim = roundSize(bounds);
-		int type = (backgroundImage == null && backgroundColor == null
-				|| backgroundImage.getTransparency() != Transparency.OPAQUE)
-				? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+		boolean opaque = backgroundImage == null ? backgroundColor != null
+				: backgroundImage.getTransparency() == Transparency.OPAQUE;
+		int type = opaque ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
 		BufferedImage frame = new BufferedImage(dim.width, dim.height, type);
 		Graphics2D g = frame.createGraphics();
 		drawFrame(num, g, bounds, dim, true);
