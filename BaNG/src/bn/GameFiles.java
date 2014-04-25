@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,8 +57,13 @@ public class GameFiles {
 
 	public static JsonStructure readJson(String filename)
 			throws IOException {
+		return readJson(open(filename));
+	}
+
+	public static JsonStructure readJson(InputStream in)
+			throws IOException {
 		JsonReader reader = Json.createReader(new BufferedReader(
-				new InputStreamReader(open(filename), "utf-8")));
+				new InputStreamReader(in, "utf-8")));
 		try {
 			return reader.read();
 		}

@@ -2,6 +2,8 @@ package bn;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,13 +90,14 @@ public class Timeline {
 		packageIndex = new HashMap<String,String>();
 		animCache = new HashMap<String,Timeline>();
 		try {
-			JsonObject packs = (JsonObject) GameFiles.readJson("AnimationPacks.json");
-			for (JsonValue packname : packs.getJsonArray("animationPacks")) {
-				String packstr = ((JsonString) packname).getString();
-				JsonObject meta = (JsonObject) GameFiles.readJson(packstr + "_Metadata.json");
+			for (File file : GameFiles.glob("*_Metadata.json")) {
+				String pack = file.getName();
+				pack = pack.substring(0, pack.length() - 14);
+				JsonObject meta = (JsonObject) GameFiles.readJson(
+						new FileInputStream(file));
 				for (JsonValue animname : meta.getJsonArray("animationNames")) {
 					String animstr = ((JsonString) animname).getString();
-					packageIndex.put(animstr.toLowerCase(), packstr);
+					packageIndex.put(animstr.toLowerCase(), pack);
 				}
 			}
 		}
