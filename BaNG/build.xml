@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AnimationGrabber" default="compile">
+	<property name="build" location="build"/>
+	<property name="class" location="${build}/class"/>
+	<property name="dist" location="${build}/dist"/>
+	<property name="bundle" location="${build}/bundle"/>
+	<property name="jsonp" location="${build}/jsonp"/>
+	<property name="exe" location="${build}/exe"/>
+
 	<loadproperties srcfile="src/ui/AnimationGrabber.java">
 		<filterchain>
 			<linecontains>
@@ -11,8 +18,9 @@
 	</loadproperties>
 
 	<target name="compile">
-		<mkdir dir="build"/>
-		<javac srcdir="src" destdir="build"
+		<mkdir dir="${build}"/>
+		<mkdir dir="${class}"/>
+		<javac srcdir="src" destdir="${class}"
 				target="1.7" source="1.7"
 				includeAntRuntime="false">
 			<classpath location="external/javax.json-1.0.4.jar"/>
@@ -20,12 +28,13 @@
 	</target>
 
 	<target name="dist" depends="compile">
-		<mkdir dir="dist"/>
-		<mkdir dir="build/ui/images"/>
-		<copy todir="build/ui/images">
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${class}/ui/images"/>
+		<copy todir="${class}/ui/images">
 			<fileset dir="images"/>
 		</copy>
-		<jar jarfile="dist/AnimationGrabber.jar" basedir="build" compress="false"/>
+		<jar jarfile="${dist}/AnimationGrabber.jar" basedir="${class}"
+				compress="false"/>
 	</target>
 
 	<taskdef name="bundleapp"
@@ -33,33 +42,33 @@
 			classpath="../buildlib/appbundler-1.0.jar"/>
 
 	<target name="bundle" depends="dist">
-		<mkdir dir="bundle"/>
-		<copy file="../README.md" tofile="bundle/README.txt"/>
-		<copy file="../LICENSE" tofile="bundle/LICENSE.txt"/>
-		<bundleapp outputdirectory="bundle"
+		<mkdir dir="${bundle}"/>
+		<copy file="../README.md" tofile="${bundle}/README.txt"/>
+		<copy file="../LICENSE" tofile="${bundle}/LICENSE.txt"/>
+		<bundleapp outputdirectory="${bundle}"
 				name="AnimationGrabber"
 				displayname="Animation Grabber"
 				identifier="ui.AnimationGrabber"
 				mainclassname="ui.AnimationGrabber"
 				icon="icons/AnimationGrabber.icns">
-			<classpath file="dist/AnimationGrabber.jar"/>
+			<classpath file="${dist}/AnimationGrabber.jar"/>
 			<classpath file="external/javax.json-1.0.4.jar"/>
 		</bundleapp>
-		<zip destfile="dist/AnimationGrabber-Mac-${VERSION}.zip"
+		<zip destfile="${dist}/AnimationGrabber-Mac-${VERSION}.zip"
 				level="9">
-			<zipfileset dir="bundle" excludes="**/JavaAppLauncher"/>
-			<zipfileset dir="bundle" includes="**/JavaAppLauncher"
+			<zipfileset dir="${bundle}" excludes="**/JavaAppLauncher"/>
+			<zipfileset dir="${bundle}" includes="**/JavaAppLauncher"
 					filemode="0755"/>
 		</zip>
 	</target>
 
 	<target name="deps" depends="dist">
-		<mkdir dir="jsonp"/>
-		<unjar src="external/javax.json-1.0.4.jar" dest="jsonp"/>
-		<delete dir="jsonp/META-INF"/>
-		<jar jarfile="dist/AnimationGrabberDeps.jar">
-			<fileset dir="build"/>
-			<fileset dir="jsonp"/>
+		<mkdir dir="${jsonp}"/>
+		<unjar src="external/javax.json-1.0.4.jar" dest="${jsonp}"/>
+		<delete dir="${jsonp}/META-INF"/>
+		<jar jarfile="${dist}/AnimationGrabberDeps.jar">
+			<fileset dir="${class}"/>
+			<fileset dir="${jsonp}"/>
 		</jar>
 	</target>
 
@@ -70,21 +79,21 @@
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar"/>
 
 	<target name="exe" depends="deps">
-		<mkdir dir="launch4j"/>
-		<copy file="../README.md" tofile="launch4j/README.txt"/>
-		<copy file="../LICENSE" tofile="launch4j/LICENSE.txt"/>
+		<mkdir dir="${exe}"/>
+		<copy file="../README.md" tofile="${exe}/README.txt"/>
+		<copy file="../LICENSE" tofile="${exe}/LICENSE.txt"/>
 		<launch4j configFile="launch4j.xml"/>
-		<zip destfile="dist/AnimationGrabber-Win-${VERSION}.zip"
-				basedir="launch4j" level="9"/>
+		<zip destfile="${dist}/AnimationGrabber-Win-${VERSION}.zip"
+				basedir="${exe}" level="9"/>
 	</target>
 
 	<target name="all" depends="bundle,exe"/>
 
 	<target name="clean">
-		<delete dir="build"/>
-		<delete dir="dist"/>
-		<delete dir="jsonp"/>
-		<delete dir="bundle"/>
-		<delete dir="launch4j"/>
+		<delete dir="${class}"/>
+		<delete dir="${dist}"/>
+		<delete dir="${bundle}"/>
+		<delete dir="${jsonp}"/>
+		<delete dir="${exe}"/>
 	</target>
 </project>

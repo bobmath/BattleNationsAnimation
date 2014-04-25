@@ -2,8 +2,8 @@
 <launch4jConfig>
 	<dontWrapJar>false</dontWrapJar>
 	<headerType>gui</headerType>
-	<jar>dist/AnimationGrabberDeps.jar</jar>
-	<outfile>launch4j/AnimationGrabber.exe</outfile>
+	<jar>build/dist/AnimationGrabberDeps.jar</jar>
+	<outfile>build/exe/AnimationGrabber.exe</outfile>
 	<errTitle></errTitle>
 	<cmdLine></cmdLine>
 	<chdir></chdir>
