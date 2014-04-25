@@ -42,12 +42,15 @@ public class DamagePattern implements Drawable {
 		Ability abil = attack.getAbility();
 		GridPoint center = new GridPoint(0, pos + range);
 		int yMin, yMax;
+		boolean corners;
 		if ("Weapon".equals(abil.getTargetType())) {
+			corners = false;
 			yMin = Math.max(-attack.getMaxRange(), -5);
-			yMax = 0;
+			yMax = -1;
 			center = center.translate(0, -range + (flip ? 1 : -1));
 		}
 		else {
+			corners = true;
 			yMin = -2;
 			yMax = Math.min(attack.getMaxRange() - 1, 2);
 		}
@@ -77,7 +80,8 @@ public class DamagePattern implements Drawable {
 			int x = sq.getX();
 			int y = sq.getY();
 			if (y < yMin || y > yMax || x < -4 || x > 4) continue;
-			if ((y == yMin || y == yMax) && (x == -4 || x == 4)) continue;
+			if (corners && (y == yMin || y == yMax)
+					&& (x == -4 || x == 4)) continue;
 			if (flip) {
 				x = -x;
 				y = -y;
