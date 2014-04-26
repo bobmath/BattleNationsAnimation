@@ -3,7 +3,6 @@
 	<property name="build" location="build"/>
 	<property name="class" location="${build}/class"/>
 	<property name="bundle" location="${build}/bundle"/>
-	<property name="jsonp" location="${build}/jsonp"/>
 	<property name="exe" location="${build}/exe"/>
 
 	<loadproperties srcfile="src/ui/AnimationGrabber.java">
@@ -64,16 +63,11 @@
 		</zip>
 	</target>
 
-	<target name="deps" depends="jar">
-		<mkdir dir="${jsonp}"/>
-		<unjar src="external/javax.json-1.0.4.jar" dest="${jsonp}"/>
-		<delete dir="${jsonp}/META-INF"/>
-		<jar jarfile="${build}/AnimationGrabberDeps.jar">
-			<fileset dir="${class}"/>
-			<fileset dir="${jsonp}"/>
-			<manifest>
-				<attribute name="Main-Class" value="ui.AnimationGrabber"/>
-			</manifest>
+	<target name="depjar" depends="jar">
+		<jar jarfile="${build}/AnimationGrabberDeps.jar" filesetmanifest="merge">
+			<zipfileset src="${build}/AnimationGrabber.jar"/>
+			<zipfileset src="external/javax.json-1.0.4.jar"
+					excludes="META-INF/**"/>
 		</jar>
 	</target>
 
@@ -83,7 +77,7 @@
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar"/>
 
-	<target name="exe" depends="deps">
+	<target name="exe" depends="depjar">
 		<mkdir dir="${exe}"/>
 		<copy file="../README.md" tofile="${exe}/README.txt"/>
 		<copy file="../LICENSE" tofile="${exe}/LICENSE.txt"/>
