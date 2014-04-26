@@ -32,12 +32,11 @@ public class GameFiles {
 		if (os == null || homeDir == null) return false;
 		if (os.equals("Mac OS X")) {
 			installDir = new File("/Applications/BattleNations.app/Contents/Resources/bundle");
-			updateDir = new File(homeDir + "/Library/Containers/com.z2live.battlenations-mac/Data/Library/Caches/jujulib/remoteData");
+			updateDir = new File(homeDir, "Library/Containers/com.z2live.battlenations-mac/Data/Library/Caches/jujulib/remoteData");
 		}
 		else if (os.startsWith("Windows")) {
-			// TODO: find real install dir
-			installDir = new File("C:/Program Files/BattleNations");
-			updateDir = new File(homeDir);
+			installDir = new File("C:/Program Files/Steam/SteamApps/common/BattleNations/assets");
+			updateDir = new File(homeDir, "Local Settings/Application Data/Z2/Battle Nations/cache/remoteData");
 		}
 		else
 			return false;
