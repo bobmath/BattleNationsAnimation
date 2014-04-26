@@ -26,12 +26,9 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<mkdir dir="${class}/ui/images"/>
-		<copy todir="${class}/ui/images">
-			<fileset dir="images"/>
-		</copy>
 		<jar jarfile="${build}/AnimationGrabber.jar" compress="false">
 			<fileset dir="${class}"/>
+			<zipfileset dir="images" prefix="ui/images"/>
 			<manifest>
 				<attribute name="Main-Class" value="ui.AnimationGrabber"/>
 			</manifest>
