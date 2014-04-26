@@ -97,10 +97,6 @@
 	<target name="all" depends="bundle,exe"/>
 
 	<target name="clean">
-		<delete dir="${class}"/>
-		<delete dir="${dist}"/>
-		<delete dir="${bundle}"/>
-		<delete dir="${jsonp}"/>
-		<delete dir="${exe}"/>
+		<delete dir="${build}"/>
 	</target>
 </project>
