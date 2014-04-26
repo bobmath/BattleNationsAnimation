@@ -33,8 +33,12 @@
 		<copy todir="${class}/ui/images">
 			<fileset dir="images"/>
 		</copy>
-		<jar jarfile="${dist}/AnimationGrabber.jar" basedir="${class}"
-				compress="false"/>
+		<jar jarfile="${dist}/AnimationGrabber.jar" compress="false">
+			<fileset dir="${class}"/>
+			<manifest>
+				<attribute name="Main-Class" value="ui.AnimationGrabber"/>
+			</manifest>
+		</jar>
 	</target>
 
 	<taskdef name="bundleapp"
@@ -69,6 +73,9 @@
 		<jar jarfile="${dist}/AnimationGrabberDeps.jar">
 			<fileset dir="${class}"/>
 			<fileset dir="${jsonp}"/>
+			<manifest>
+				<attribute name="Main-Class" value="ui.AnimationGrabber"/>
+			</manifest>
 		</jar>
 	</target>
 
