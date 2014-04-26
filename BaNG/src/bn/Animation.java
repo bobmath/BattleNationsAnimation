@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-public class Animation implements Drawable, Cloneable {
+public class Animation implements Drawable {
 
 	private Timeline timeline;
 	private Bitmap bitmap;
@@ -134,16 +134,6 @@ public class Animation implements Drawable, Cloneable {
 	@Override
 	public double getSortPosition() {
 		return yPos;
-	}
-
-	@Override
-	public Animation clone() {
-		try {
-			return (Animation) super.clone();
-		}
-		catch (CloneNotSupportedException e) {
-			throw new RuntimeException("Can't happen", e);
-		}
 	}
 
 }
