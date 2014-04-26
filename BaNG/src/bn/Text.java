@@ -14,8 +14,7 @@ public class Text {
 
 	private static Map<String,String> text;
 
-	public static void load() throws IOException
-	{
+	public static void load() throws IOException {
 		text = new HashMap<String,String>();
 		try {
 			loadJson("BattleNations_en.json");
@@ -26,8 +25,7 @@ public class Text {
 		}
 	}
 
-	private static void loadJson(String file) throws IOException
-	{
+	private static void loadJson(String file) throws IOException {
 		JsonObject json = (JsonObject) GameFiles.readJson(file);
 		for (Map.Entry<String,JsonValue> item : json.entrySet()) {
 			String str = ((JsonString) item.getValue()).getString();
