@@ -81,6 +81,7 @@
 		<mkdir dir="${exe}"/>
 		<copy file="../README.md" tofile="${exe}/README.txt"/>
 		<copy file="../LICENSE" tofile="${exe}/LICENSE.txt"/>
+		<fixcrlf srcdir="${exe}" includes="**/*.txt" eol="crlf"/>
 		<launch4j configFile="launch4j.xml"/>
 		<zip destfile="${build}/AnimationGrabber-Win-${VERSION}.zip"
 				basedir="${exe}" level="9"/>
