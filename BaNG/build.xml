@@ -2,7 +2,6 @@
 <project name="AnimationGrabber" default="compile">
 	<property name="build" location="build"/>
 	<property name="class" location="${build}/class"/>
-	<property name="dist" location="${build}/dist"/>
 	<property name="bundle" location="${build}/bundle"/>
 	<property name="jsonp" location="${build}/jsonp"/>
 	<property name="exe" location="${build}/exe"/>
@@ -27,13 +26,12 @@
 		</javac>
 	</target>
 
-	<target name="dist" depends="compile">
-		<mkdir dir="${dist}"/>
+	<target name="jar" depends="compile">
 		<mkdir dir="${class}/ui/images"/>
 		<copy todir="${class}/ui/images">
 			<fileset dir="images"/>
 		</copy>
-		<jar jarfile="${dist}/AnimationGrabber.jar" compress="false">
+		<jar jarfile="${build}/AnimationGrabber.jar" compress="false">
 			<fileset dir="${class}"/>
 			<manifest>
 				<attribute name="Main-Class" value="ui.AnimationGrabber"/>
@@ -45,7 +43,7 @@
 			classname="com.oracle.appbundler.AppBundlerTask"
 			classpath="../buildlib/appbundler-1.0.jar"/>
 
-	<target name="bundle" depends="dist">
+	<target name="bundle" depends="jar">
 		<mkdir dir="${bundle}"/>
 		<copy file="../README.md" tofile="${bundle}/README.txt"/>
 		<copy file="../LICENSE" tofile="${bundle}/LICENSE.txt"/>
@@ -55,10 +53,10 @@
 				identifier="ui.AnimationGrabber"
 				mainclassname="ui.AnimationGrabber"
 				icon="icons/AnimationGrabber.icns">
-			<classpath file="${dist}/AnimationGrabber.jar"/>
+			<classpath file="${build}/AnimationGrabber.jar"/>
 			<classpath file="external/javax.json-1.0.4.jar"/>
 		</bundleapp>
-		<zip destfile="${dist}/AnimationGrabber-Mac-${VERSION}.zip"
+		<zip destfile="${build}/AnimationGrabber-Mac-${VERSION}.zip"
 				level="9">
 			<zipfileset dir="${bundle}" excludes="**/JavaAppLauncher"/>
 			<zipfileset dir="${bundle}" includes="**/JavaAppLauncher"
@@ -66,11 +64,11 @@
 		</zip>
 	</target>
 
-	<target name="deps" depends="dist">
+	<target name="deps" depends="jar">
 		<mkdir dir="${jsonp}"/>
 		<unjar src="external/javax.json-1.0.4.jar" dest="${jsonp}"/>
 		<delete dir="${jsonp}/META-INF"/>
-		<jar jarfile="${dist}/AnimationGrabberDeps.jar">
+		<jar jarfile="${build}/AnimationGrabberDeps.jar">
 			<fileset dir="${class}"/>
 			<fileset dir="${jsonp}"/>
 			<manifest>
@@ -90,7 +88,7 @@
 		<copy file="../README.md" tofile="${exe}/README.txt"/>
 		<copy file="../LICENSE" tofile="${exe}/LICENSE.txt"/>
 		<launch4j configFile="launch4j.xml"/>
-		<zip destfile="${dist}/AnimationGrabber-Win-${VERSION}.zip"
+		<zip destfile="${build}/AnimationGrabber-Win-${VERSION}.zip"
 				basedir="${exe}" level="9"/>
 	</target>
 
