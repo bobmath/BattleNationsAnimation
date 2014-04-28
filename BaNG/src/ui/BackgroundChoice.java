@@ -73,7 +73,8 @@ public class BackgroundChoice {
 	private BackgroundChoice(String name, int type) {
 		this.name = name;
 		this.type = type;
-		color = Color.WHITE;
+		if (type == TYPE_CHOOSE)
+			color = Color.WHITE;
 	}
 
 	private BackgroundChoice(String name, File file) {
