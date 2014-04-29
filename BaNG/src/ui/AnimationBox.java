@@ -334,7 +334,7 @@ public class AnimationBox extends JComponent {
 		File file = selectOutputFile(anim.getName(), "png");
 		if (file == null) return;
 		try {
-			writePng(file, num, -1);
+			writePng(file, num, num);
 		}
 		catch (IOException e) {
 			showWriteError();
