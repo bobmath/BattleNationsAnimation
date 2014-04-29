@@ -66,7 +66,7 @@ public class AnimationBox extends JComponent {
 
 	public AnimationBox() {
 		objects = new Drawable[0];
-		timer = new Timer(50, new ActionListener() {
+		timer = new Timer(32, new ActionListener() { //This should be closely synced with in-game anims
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				tick++;
