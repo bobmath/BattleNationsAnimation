@@ -40,7 +40,7 @@ public class AnimationBox extends JComponent {
 	private static final long serialVersionUID = 1L;
 	private static final Color defaultColor =
 			new Color(0xf2, 0xf2, 0xf2); // wiki light gray
-	private static final int DELAY = 5;
+	private static final int DELAY = 32; // This should be closely synced with in-game anims
 
 	private static final Comparator<Drawable> drawOrder =
 			new Comparator<Drawable>() {
@@ -66,7 +66,7 @@ public class AnimationBox extends JComponent {
 
 	public AnimationBox() {
 		objects = new Drawable[0];
-		timer = new Timer(32, new ActionListener() { //This should be closely synced with in-game anims
+		timer = new Timer(DELAY, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				tick++;

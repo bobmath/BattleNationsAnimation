@@ -87,18 +87,17 @@ public class GifAnimation {
 		BufferedImage img = getIndexedImage();
 		ImageTypeSpecifier imageType = new ImageTypeSpecifier(img);
 		Rectangle[] frameRects = new Rectangle[numFrames];
-		int[] frameDelays = new int[numFrames];
+		int[] holdFrame = new int[numFrames];
 		int prevIndex = 0;
 		int numImages = 1;
 		frameRects[0] = new Rectangle(0, 0, width, height);
-		frameDelays[0] = delay;
 		for (int i = 1; i < numFrames; i++) {
 			frameRects[i] = findDiffRect(img, i);
 			if (frameRects[i] != null) {
 				prevIndex = i;
 				numImages++;
 			}
-			frameDelays[prevIndex] += delay;
+			holdFrame[prevIndex] = i;
 		}
 
 		IIOImage[] images = new IIOImage[numImages];
@@ -110,6 +109,10 @@ public class GifAnimation {
 					rect.x + (i % grid) * width,
 					rect.y + (i / grid) * height,
 					rect.width, rect.height);
+
+			// Don't try to "optimize" this, the round-off needs to be right.
+			int wait = ((holdFrame[i] + 1) * delay) / 10 - (i * delay) / 10;
+
 			IIOMetadata meta = writer.getDefaultImageMetadata(imageType, null);
 			IIOMetadataNode root = new IIOMetadataNode(metadataFormat);
 
@@ -136,7 +139,7 @@ public class GifAnimation {
 			gce.setAttribute("userInputFlag", "false");
 			gce.setAttribute("transparentColorFlag", "false");
 			gce.setAttribute("transparentColorIndex", "0");
-			gce.setAttribute("delayTime", String.valueOf(frameDelays[i]));
+			gce.setAttribute("delayTime", String.valueOf(wait));
 			root.appendChild(gce);
 
 			meta.mergeTree(metadataFormat, root);
