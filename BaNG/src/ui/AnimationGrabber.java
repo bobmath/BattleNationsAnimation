@@ -462,7 +462,7 @@ public class AnimationGrabber {
 		for (Drawable obj : list)
 			if (obj.getEndFrame() > hitEnd)
 				hitEnd = obj.getEndFrame();
-		while (animEnd < hitEnd) {
+		do {
 			Animation idle = pos > 0 ? unit.getBackAnimation()
 					: unit.getFrontAnimation();
 			if (idle == null || idle.getNumFrames() <= 0) break;
@@ -471,7 +471,7 @@ public class AnimationGrabber {
 			idle.earlyStop(hitEnd);
 			list.add(idle);
 			animEnd = idle.getEndFrame();
-		}
+		} while (animEnd < hitEnd);
 	}
 
 	private void updateSize() {
