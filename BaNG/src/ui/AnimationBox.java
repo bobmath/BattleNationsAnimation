@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Formatter;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -309,6 +310,12 @@ public class AnimationBox extends JComponent {
 		return file;
 	}
 
+	private void showWriteError() {
+		JOptionPane.showMessageDialog(this,
+				"Error writing file.",
+				"Error", JOptionPane.ERROR_MESSAGE);
+	}
+
 	public void saveCurrentAsGif() {
 		if (anim == null) return;
 		File file = selectOutputFile(anim.getName(), "gif");
@@ -317,23 +324,32 @@ public class AnimationBox extends JComponent {
 			writeGif(file);
 		}
 		catch (IOException e) {
-			JOptionPane.showMessageDialog(null,
-					"Error writing file.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+			showWriteError();
 		}
 	}
 
 	public void saveCurrentAsPng() {
 		if (anim == null) return;
+		int num = tick;
 		File file = selectOutputFile(anim.getName(), "png");
 		if (file == null) return;
 		try {
-			writePng(file);
+			writePng(file, num, -1);
 		}
 		catch (IOException e) {
-			JOptionPane.showMessageDialog(null,
-					"Error writing file.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+			showWriteError();
+		}
+	}
+
+	public void saveAllAsPng() {
+		if (anim == null) return;
+		File file = selectOutputFile(anim.getName() + "_###", "png");
+		if (file == null) return;
+		try {
+			writeAllPngs(file);
+		}
+		catch (IOException e) {
+			showWriteError();
 		}
 	}
 
@@ -346,9 +362,7 @@ public class AnimationBox extends JComponent {
 			ImageIO.write(im, "png", file);
 		}
 		catch (IOException e) {
-			JOptionPane.showMessageDialog(null,
-					"Error writing file.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+			showWriteError();
 		}
 	}
 
@@ -366,9 +380,9 @@ public class AnimationBox extends JComponent {
 		out.write(file);
 	}
 
-	private void writePng(File file) throws IOException {
-		int num = tick;
-		Rectangle2D.Double bounds = getAnimBounds(num);
+	private void writePng(File file, int num, int boundFrame)
+			throws IOException {
+		Rectangle2D.Double bounds = getAnimBounds(boundFrame);
 		if (bounds == null) return;
 		Dimension dim = roundSize(bounds);
 		boolean opaque = backgroundImage == null ? backgroundColor != null
@@ -379,6 +393,40 @@ public class AnimationBox extends JComponent {
 		drawFrame(num, g, bounds, dim, true);
 		file.delete();
 		ImageIO.write(frame, "png", file);
+	}
+
+	private void writeAllPngs(File file) throws IOException {
+		String dir = file.getParent();
+		String name = file.getName();
+		String fmt, prefix, suffix;
+		int index = name.indexOf('#');
+		if (index >= 0) {
+			int lastIndex = name.lastIndexOf('#');
+			fmt = "%s%0" + (lastIndex - index + 1) + "d%s";
+			prefix = name.substring(0, index);
+			suffix = name.substring(lastIndex + 1);
+		}
+		else {
+			fmt = "%s%d%s";
+			index = name.lastIndexOf('.');
+			if (index >= 0) {
+				prefix = name.substring(0, index);
+				suffix = name.substring(index);
+			}
+			else {
+				prefix = name;
+				suffix = "";
+			}
+		}
+
+		StringBuilder str = new StringBuilder();
+		Formatter formatter = new Formatter(str);
+		for (int i = 0; i < numFrames; i++) {
+			str.delete(0, str.length());
+			formatter.format(fmt, prefix, i, suffix);
+			writePng(new File(dir, str.toString()), i, -1);
+		}
+		formatter.close();
 	}
 
 	private void replaceRawBitmap() {

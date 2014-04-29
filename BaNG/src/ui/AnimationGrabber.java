@@ -230,6 +230,15 @@ public class AnimationGrabber {
 		});
 		exportPopup.add(exportPng);
 
+		JMenuItem exportAll = new JMenuItem("Export All Frames");
+		exportAll.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				animBox.saveAllAsPng();
+			}
+		});
+		exportPopup.add(exportAll);
+
 		final JButton exportBtn = new JButton("Export");
 		exportBtn.addActionListener(new ActionListener() {
 			@Override
