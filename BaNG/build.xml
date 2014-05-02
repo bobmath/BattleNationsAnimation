@@ -35,10 +35,19 @@
 		</jar>
 	</target>
 
+	<target name="depjar" depends="jar">
+		<jar jarfile="${build}/AnimationGrabberDeps.jar" filesetmanifest="merge">
+			<zipfileset src="${build}/AnimationGrabber.jar"/>
+			<zipfileset src="external/javax.json-1.0.4.jar"
+					excludes="META-INF/**"/>
+		</jar>
+	</target>
+
+	<!-- Install AppBundler to build the Mac .app
+			http://java.net/projects/appbundler -->
 	<taskdef name="bundleapp"
 			classname="com.oracle.appbundler.AppBundlerTask"
 			classpath="../buildlib/appbundler-1.0.jar"/>
-
 	<target name="bundle" depends="jar">
 		<mkdir dir="${bundle}"/>
 		<copy file="../README.md" tofile="${bundle}/README.txt"/>
@@ -60,20 +69,12 @@
 		</zip>
 	</target>
 
-	<target name="depjar" depends="jar">
-		<jar jarfile="${build}/AnimationGrabberDeps.jar" filesetmanifest="merge">
-			<zipfileset src="${build}/AnimationGrabber.jar"/>
-			<zipfileset src="external/javax.json-1.0.4.jar"
-					excludes="META-INF/**"/>
-		</jar>
-	</target>
-
+	<!-- Install Launch4j to build the .exe
+			http://launch4j.sourceforge.net/ -->
 	<property name="launch4j.dir" location="../buildlib/launch4j"/>
-
 	<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar"/>
-
 	<target name="exe" depends="depjar">
 		<mkdir dir="${exe}"/>
 		<copy file="../README.md" tofile="${exe}/README.txt"/>
