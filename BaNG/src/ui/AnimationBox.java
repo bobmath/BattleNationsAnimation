@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
@@ -21,6 +22,7 @@ import java.util.Formatter;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
@@ -64,6 +66,7 @@ public class AnimationBox extends JComponent {
 	private int numFrames;
 	private boolean paused;
 	private JSlider frameSlider;
+	private boolean slowRescale;
 
 	public AnimationBox() {
 		objects = new Drawable[0];
@@ -112,6 +115,15 @@ public class AnimationBox extends JComponent {
 			}
 		});
 		popup.add(restore);
+
+		final JCheckBoxMenuItem slow = new JCheckBoxMenuItem("Slow Downscale");
+		slow.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				slowRescale = slow.getState();
+			}
+		});
+		popup.add(slow);
 
 		this.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -228,6 +240,29 @@ public class AnimationBox extends JComponent {
 			obj.drawFrame(frame, g);
 			g.setTransform(oldTrans);
 		}
+	}
+
+	private void drawFrameScaled(int frame, Graphics2D g,
+			Rectangle2D.Double bounds, Dimension dim,
+			boolean transparent) {
+		if (!slowRescale || scale >= 0.99) {
+			drawFrame(frame, g, bounds, dim, transparent);
+			return;
+		}
+
+		int mult = 2;
+		while (scale * mult < 0.99 && mult < 100)
+			mult *= 2;
+
+		BufferedImage im = new BufferedImage(dim.width * mult,
+				dim.height * mult, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2 = im.createGraphics();
+		g2.scale(mult, mult);
+
+		drawFrame(frame, g2, bounds, dim, transparent);
+
+		g.drawImage(im.getScaledInstance(dim.width, dim.height,
+				BufferedImage.SCALE_AREA_AVERAGING), 0, 0, null);
 	}
 
 	public void setAnimation(Animation anim) {
@@ -374,7 +409,7 @@ public class AnimationBox extends JComponent {
 				numFrames, DELAY);
 		for (int i = 0; i < numFrames; i++) {
 			Graphics2D g = out.getFrame(i).createGraphics();
-			drawFrame(i, g, bounds, dim, false);
+			drawFrameScaled(i, g, bounds, dim, false);
 		}
 		file.delete();
 		out.write(file);
@@ -390,7 +425,7 @@ public class AnimationBox extends JComponent {
 		int type = opaque ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
 		BufferedImage frame = new BufferedImage(dim.width, dim.height, type);
 		Graphics2D g = frame.createGraphics();
-		drawFrame(num, g, bounds, dim, true);
+		drawFrameScaled(num, g, bounds, dim, true);
 		file.delete();
 		ImageIO.write(frame, "png", file);
 	}
