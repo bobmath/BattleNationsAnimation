@@ -250,9 +250,8 @@ public class AnimationBox extends JComponent {
 			return;
 		}
 
-		int mult = 2;
-		while (scale * mult < 0.99 && mult < 100)
-			mult *= 2;
+		int mult = (int) Math.ceil(1 / scale);
+		if (mult > 100) mult = 100;
 
 		BufferedImage im = new BufferedImage(dim.width * mult,
 				dim.height * mult, BufferedImage.TYPE_INT_ARGB);
