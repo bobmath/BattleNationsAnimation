@@ -2,7 +2,7 @@
 <project name="AnimationGrabber" default="compile">
 	<property name="build" location="build"/>
 	<property name="class" location="${build}/class"/>
-	<property name="bundle" location="${build}/bundle"/>
+	<property name="app" location="${build}/app"/>
 	<property name="exe" location="${build}/exe"/>
 
 	<loadproperties srcfile="src/ui/AnimationGrabber.java">
@@ -48,11 +48,11 @@
 	<taskdef name="bundleapp"
 			classname="com.oracle.appbundler.AppBundlerTask"
 			classpath="../buildlib/appbundler-1.0.jar"/>
-	<target name="bundle" depends="jar">
-		<mkdir dir="${bundle}"/>
-		<copy file="../README.md" tofile="${bundle}/README.txt"/>
-		<copy file="../LICENSE" tofile="${bundle}/LICENSE.txt"/>
-		<bundleapp outputdirectory="${bundle}"
+	<target name="app" depends="jar">
+		<mkdir dir="${app}"/>
+		<copy file="../README.md" tofile="${app}/README.txt"/>
+		<copy file="../LICENSE" tofile="${app}/LICENSE.txt"/>
+		<bundleapp outputdirectory="${app}"
 				name="AnimationGrabber"
 				displayname="Animation Grabber"
 				identifier="ui.AnimationGrabber"
@@ -63,8 +63,8 @@
 		</bundleapp>
 		<zip destfile="${build}/AnimationGrabber-Mac-${VERSION}.zip"
 				level="9">
-			<zipfileset dir="${bundle}" excludes="**/JavaAppLauncher"/>
-			<zipfileset dir="${bundle}" includes="**/JavaAppLauncher"
+			<zipfileset dir="${app}" excludes="**/JavaAppLauncher"/>
+			<zipfileset dir="${app}" includes="**/JavaAppLauncher"
 					filemode="0755"/>
 		</zip>
 	</target>
@@ -85,7 +85,7 @@
 				basedir="${exe}" level="9"/>
 	</target>
 
-	<target name="all" depends="bundle,exe"/>
+	<target name="all" depends="app,exe"/>
 
 	<target name="clean">
 		<delete dir="${build}"/>
