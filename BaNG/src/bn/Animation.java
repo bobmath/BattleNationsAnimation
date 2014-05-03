@@ -81,7 +81,8 @@ public class Animation implements Drawable {
 
 	public void earlyStop(int frame) {
 		frame -= delay;
-		if (frame < 1) frame = 1;
+		// Some animations only move on even-numbered frames, so leave 2
+		if (frame < 2) frame = 2;
 		Frame first = timeline.getFrame(0);
 		while (frame < numFrames) {
 			if (timeline.getFrame(frame) == first) {
