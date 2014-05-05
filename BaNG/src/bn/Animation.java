@@ -93,6 +93,11 @@ public class Animation implements Drawable {
 		}
 	}
 
+	public void singleFrame() {
+		numFrames = 1;
+		loop = true;
+	}
+
 	public void setLoop(boolean loop) {
 		this.loop = loop;
 	}
