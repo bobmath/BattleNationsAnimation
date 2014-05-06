@@ -9,7 +9,7 @@ public class GridPoint {
 
 	public GridPoint(int xg, int yg) {
 		x = -GRID_X * (xg + yg);
-		y = GRID_Y * (yg - xg);
+		y = GRID_Y * (yg - xg) + GRID_Y;
 		if (yg < 0) {
 			x -= GRID_X / 4;
 			y += (GRID_Y + 2) / 4;
