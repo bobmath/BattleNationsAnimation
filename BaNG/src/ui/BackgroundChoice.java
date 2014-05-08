@@ -21,6 +21,13 @@ public class BackgroundChoice {
 	public static BackgroundChoice[] getBackgrounds() {
 		List<BackgroundChoice> items = new ArrayList<BackgroundChoice>();
 		items.add(new ColorBackground("Default Background"));
+		for (File file : GameFiles.glob("BattleMap*.png")) {
+			String name = file.getName();
+			name = name.replaceFirst("(?i:\\.png)$", "");
+			name = name.replaceFirst("^(?i:battle)", "");
+			items.add(new ImageBackground(name, file));
+		}
+		items.add(new ChooseImage("Other Image..."));
 		items.add(new ColorBackground("Black", 0, 0, 0));
 		items.add(new ColorBackground("Critter Tan", 0xdd, 0xcc, 0xaa));
 		items.add(new ColorBackground("Neutral Beige", 0xe0, 0xdc, 0xd0));
@@ -30,13 +37,6 @@ public class BackgroundChoice {
 		items.add(new ColorBackground("Sky Blue", 0x87, 0xce, 0xfa));
 		items.add(new ColorBackground("White", 0xff, 0xff, 0xff));
 		items.add(new ChooseColor("Other Color..."));
-		for (File file : GameFiles.glob("BattleMap*.png")) {
-			String name = file.getName();
-			name = name.replaceFirst("(?i:\\.png)$", "");
-			name = name.replaceFirst("^(?i:battle)", "");
-			items.add(new ImageBackground(name, file));
-		}
-		items.add(new ChooseImage("Other Image..."));
 		BackgroundChoice[] array = new BackgroundChoice[items.size()];
 		return items.toArray(array);
 	}
