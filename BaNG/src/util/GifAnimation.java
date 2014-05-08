@@ -29,9 +29,11 @@ public class GifAnimation {
 		this.width = width;
 		this.height = height;
 		this.numFrames = frames;
-		this.grid = (int) Math.ceil(Math.sqrt(numFrames));
 		this.delay = delay;
-		this.image = new BufferedImage(width*grid, height*grid, BufferedImage.TYPE_INT_RGB);
+		// Get an extra frame that's left completely transparent,
+		// to ensure that there's space in the color palette.
+		this.grid = (int) Math.ceil(Math.sqrt(numFrames + 1));
+		this.image = new BufferedImage(width*grid, height*grid, BufferedImage.TYPE_INT_ARGB);
 	}
 
 	public BufferedImage getFrame(int frame) {
@@ -88,17 +90,18 @@ public class GifAnimation {
 		ImageTypeSpecifier imageType = new ImageTypeSpecifier(img);
 		Rectangle[] frameRects = new Rectangle[numFrames];
 		int[] holdFrame = new int[numFrames];
-		int prevIndex = 0;
+		int prevIndex = numFrames;
 		int numImages = 1;
 		frameRects[0] = new Rectangle(0, 0, width, height);
-		for (int i = 1; i < numFrames; i++) {
+		for (int i = numFrames - 1; i > 0; i--) {
 			frameRects[i] = findDiffRect(img, i);
 			if (frameRects[i] != null) {
+				holdFrame[i] = prevIndex;
 				prevIndex = i;
 				numImages++;
 			}
-			holdFrame[prevIndex] = i;
 		}
+		holdFrame[0] = prevIndex;
 
 		IIOImage[] images = new IIOImage[numImages];
 		int j = 0;
@@ -111,7 +114,7 @@ public class GifAnimation {
 					rect.width, rect.height);
 
 			// Don't try to "optimize" this, the round-off needs to be right.
-			int wait = ((holdFrame[i] + 1) * delay) / 10 - (i * delay) / 10;
+			int wait = (holdFrame[i] * delay) / 10 - (i * delay) / 10;
 
 			IIOMetadata meta = writer.getDefaultImageMetadata(imageType, null);
 			IIOMetadataNode root = new IIOMetadataNode(metadataFormat);
@@ -137,7 +140,8 @@ public class GifAnimation {
 			IIOMetadataNode gce = new IIOMetadataNode("GraphicControlExtension");
 			gce.setAttribute("disposalMethod", "doNotDispose");
 			gce.setAttribute("userInputFlag", "false");
-			gce.setAttribute("transparentColorFlag", "false");
+			gce.setAttribute("transparentColorFlag",
+					String.valueOf(i > 0));
 			gce.setAttribute("transparentColorIndex", "0");
 			gce.setAttribute("delayTime", String.valueOf(wait));
 			root.appendChild(gce);
@@ -174,15 +178,15 @@ public class GifAnimation {
 		int y2 = (frame / grid) * height;
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				if (img.getRGB(x+x1, y+y1) != img.getRGB(x+x2, y+y2)) {
+				if (img.getRGB(x+x1, y+y1) == img.getRGB(x+x2, y+y2))
+					img.setRGB(x+x1, y+y1, 0);  // transparent
+				else {
 					if (y < top)
 						top = y;
 					bottom = y;
 					if (x < left)
 						left = x;
-					if (x < right)
-						x = right;
-					else
+					if (x > right)
 						right = x;
 				}
 			}
