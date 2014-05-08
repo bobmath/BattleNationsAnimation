@@ -181,8 +181,9 @@ public class AnimationBox extends JComponent {
 
 		BufferedImage im = backgroundImage;
 		if (im != null) {
-			int width = im.getWidth() - 2;
-			int height = im.getHeight() - 2;
+			int edge = 2 * (int) Math.ceil(1 / scale);
+			int width = im.getWidth() - edge;
+			int height = im.getHeight() - edge;
 			Rectangle2D.Double b = new Rectangle2D.Double(
 					-width/2, -height/2, width, height);
 			if (bounds == null)
