@@ -35,7 +35,10 @@ public class GameFiles {
 			updateDir = new File(homeDir, "Library/Containers/com.z2live.battlenations-mac/Data/Library/Caches/jujulib/remoteData");
 		}
 		else if (os.startsWith("Windows")) {
-			installDir = new File("C:/Program Files/Steam/SteamApps/common/BattleNations/assets");
+			final String steamPath = "Steam/SteamApps/common/BattleNations/assets";
+			installDir = new File("C:/Program Files", steamPath);
+			if (!installDir.isDirectory())
+				installDir = new File("C:/Program Files (x86)", steamPath);
 			updateDir = new File(homeDir, "Local Settings/Application Data/Z2/Battle Nations/cache/remoteData");
 		}
 		else
