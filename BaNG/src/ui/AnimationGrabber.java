@@ -444,8 +444,8 @@ public class AnimationGrabber {
 					hitAnim.setDelay(attack.getHitDelay());
 					hitAnim.setGridPosition(0, pos + range);
 					list.add(hitAnim);
-					padAnimation(unit, pos, anim.getEndFrame(), list);
 				}
+				padAnimation(unit, pos, anim.getEndFrame(), list);
 			}
 		}
 
