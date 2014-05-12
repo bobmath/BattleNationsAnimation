@@ -458,7 +458,7 @@ public class AnimationGrabber {
 
 	private void padAnimation(Unit unit, int pos, int animEnd,
 			List<Drawable> list) throws IOException {
-		int hitEnd = 0;
+		int hitEnd = animEnd + 20;
 		for (Drawable obj : list)
 			if (obj.getEndFrame() > hitEnd)
 				hitEnd = obj.getEndFrame();
