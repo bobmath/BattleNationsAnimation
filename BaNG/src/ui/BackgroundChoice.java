@@ -100,13 +100,16 @@ public class BackgroundChoice {
 	}
 
 	protected static class ChooseImage extends BackgroundChoice {
+		private JFileChooser fileChooser;
 		protected ChooseImage(String name) {
 			super(name);
 		}
 		public void setBackground(AnimationBox animBox) {
-			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setFileFilter(new FileNameExtensionFilter("Images", "png", "gif", "jpg", "jpeg"));
-			fileChooser.setDialogTitle("Load Background");
+			if (fileChooser == null) {
+				fileChooser = new JFileChooser();
+				fileChooser.setFileFilter(new FileNameExtensionFilter("Images", "png", "gif", "jpg", "jpeg"));
+				fileChooser.setDialogTitle("Load Background");
+			}
 			int userOption = fileChooser.showOpenDialog(animBox);
 			if (userOption != JFileChooser.APPROVE_OPTION) return;
 			File img = fileChooser.getSelectedFile();
