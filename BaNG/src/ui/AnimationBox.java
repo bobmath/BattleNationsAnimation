@@ -322,9 +322,11 @@ public class AnimationBox extends JComponent {
 		repaint();
 	}
 
+	private JFileChooser fileChooser;
 	private File selectOutputFile(String suggest, String ext) {
 		String uc = ext.toUpperCase();
-		JFileChooser fileChooser = new JFileChooser();
+		if (fileChooser == null)
+			fileChooser = new JFileChooser();
 		fileChooser.setFileFilter(new FileNameExtensionFilter(uc + " Images", ext));
 		if (suggest != null)
 			fileChooser.setSelectedFile(new File(suggest + "." + ext));
@@ -466,7 +468,9 @@ public class AnimationBox extends JComponent {
 
 	private void replaceRawBitmap() {
 		if (anim == null) return;
-		JFileChooser fileChooser = new JFileChooser();
+		if (fileChooser == null)
+			fileChooser = new JFileChooser();
+		fileChooser = new JFileChooser();
 		fileChooser.setFileFilter(new FileNameExtensionFilter("PNG Images", "png"));
 		fileChooser.setDialogTitle("Load PNG");
 		int userOption = fileChooser.showOpenDialog(this);
