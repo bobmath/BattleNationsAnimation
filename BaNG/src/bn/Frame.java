@@ -79,10 +79,12 @@ public class Frame {
 			if (p0.alpha != 1) hasAlpha = true;
 			alpha[i] = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, p0.alpha);
 
-			stretchBounds(p0.x1, p0.y1);
-			stretchBounds(p1.x1, p1.y1);
-			stretchBounds(p2.x1, p2.y1);
-			stretchBounds(p3.x1, p3.y1);
+			if (p0.alpha >= 0.5f / 255) {
+				stretchBounds(p0.x1, p0.y1);
+				stretchBounds(p1.x1, p1.y1);
+				stretchBounds(p2.x1, p2.y1);
+				stretchBounds(p3.x1, p3.y1);
+			}
 
 			AffineTransform t = new AffineTransform(
 					(p1.x1 - p0.x1) * scale, (p1.y1 - p0.y1) * scale,
