@@ -152,12 +152,12 @@ public class AnimationBox extends JComponent {
 				if (Math.abs(e.getX() - xDown) < DRAG_THRESH &&
 						Math.abs(e.getY() - yDown) < DRAG_THRESH)
 					return;
-				xDown -= backgroundX;
-				yDown -= backgroundY;
+				xDown -= backgroundX * scale;
+				yDown -= backgroundY * scale;
 				dragging = true;
 			}
-			backgroundX = e.getX() - xDown;
-			backgroundY = e.getY() - yDown;
+			backgroundX = (int) ((e.getX() - xDown) / scale);
+			backgroundY = (int) ((e.getY() - yDown) / scale);
 			repaint();
 		}
 	}
