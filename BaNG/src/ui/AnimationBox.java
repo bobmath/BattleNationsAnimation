@@ -338,6 +338,7 @@ public class AnimationBox extends JComponent {
 	public void setBackgroundImage(BufferedImage image) {
 		backgroundColor = null;
 		backgroundImage = image;
+		backgroundX = backgroundY = 0;
 		repaint();
 	}
 
