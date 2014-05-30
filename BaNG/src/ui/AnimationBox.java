@@ -210,7 +210,8 @@ public class AnimationBox extends JComponent {
 			int width = im.getWidth() - edge;
 			int height = im.getHeight() - edge;
 			Rectangle2D.Double b = new Rectangle2D.Double(
-					-width/2, -height/2, width, height);
+					backgroundX - width/2, backgroundY - height/2,
+					width, height);
 			if (bounds == null)
 				bounds = b;
 			else
