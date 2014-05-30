@@ -60,8 +60,8 @@ public class AnimationBox extends JComponent {
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
-	private double scale = 1;
-	private BufferedImage backgroundImage;
+	protected double scale = 1;
+	protected BufferedImage backgroundImage;
 	protected int backgroundX, backgroundY;
 	private int numFrames;
 	private boolean paused;
