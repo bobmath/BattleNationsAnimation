@@ -8,7 +8,6 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -31,6 +30,7 @@ import javax.swing.JSlider;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import util.GifAnimation;
@@ -62,10 +62,12 @@ public class AnimationBox extends JComponent {
 	private Color backgroundColor;
 	private double scale = 1;
 	private BufferedImage backgroundImage;
+	protected int backgroundX, backgroundY;
 	private int numFrames;
 	private boolean paused;
 	private JSlider frameSlider;
-	private boolean slowRescale;
+	protected boolean slowRescale;
+	protected JPopupMenu popup;
 
 	public AnimationBox() {
 		objects = new Drawable[0];
@@ -84,7 +86,7 @@ public class AnimationBox extends JComponent {
 	}
 
 	private void buildPopup() {
-		final JPopupMenu popup = new JPopupMenu();
+		popup = new JPopupMenu();
 
 		JMenuItem export = new JMenuItem("Export Raw Bitmap");
 		export.addActionListener(new ActionListener () {
@@ -124,16 +126,40 @@ public class AnimationBox extends JComponent {
 		});
 		popup.add(slow);
 
-		this.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger())
-					popup.show(e.getComponent(), e.getX(), e.getY());
+		DragListener dragger = new DragListener();
+		this.addMouseListener(dragger);
+		this.addMouseMotionListener(dragger);
+	}
+
+	private class DragListener extends MouseInputAdapter {
+		private static final int DRAG_THRESH = 4;
+		private boolean dragging;
+		private int xDown, yDown;
+		public void mousePressed(MouseEvent e) {
+			dragging = false;
+			xDown = e.getX();
+			yDown = e.getY();
+			if (e.isPopupTrigger())
+				popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger())
+				popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		public void mouseDragged(MouseEvent e) {
+			if (backgroundImage == null) return;
+			if (!dragging) {
+				if (Math.abs(e.getX() - xDown) < DRAG_THRESH &&
+						Math.abs(e.getY() - yDown) < DRAG_THRESH)
+					return;
+				xDown -= backgroundX;
+				yDown -= backgroundY;
+				dragging = true;
 			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger())
-					popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+			backgroundX = e.getX() - xDown;
+			backgroundY = e.getY() - yDown;
+			repaint();
+		}
 	}
 
 	public void setSlider(JSlider frameSlider) {
@@ -227,7 +253,8 @@ public class AnimationBox extends JComponent {
 		g.scale(scale, scale);
 
 		if (im != null)
-			g.drawImage(im, -im.getWidth()/2, -im.getHeight()/2, null);
+			g.drawImage(im, backgroundX - im.getWidth()/2,
+					backgroundY - im.getHeight()/2, null);
 
 		// This makes drawing the background image outrageously slow
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
