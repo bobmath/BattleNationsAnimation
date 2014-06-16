@@ -94,9 +94,10 @@ public class Building implements Comparable<Building> {
 
 		busyAnimationName = json.getString("Active", null);
 
-		idleAnimationName = json.getString("Default", null);
-		if (idleAnimationName == null)
-			idleAnimationName = json.getString("Idle", null);
+		idleAnimationName = json.getString("Idle", null);
+		if (idleAnimationName == null
+				|| idleAnimationName.equals(busyAnimationName))
+			idleAnimationName = json.getString("Default", null);
 	}
 
 	public String getTag() {
