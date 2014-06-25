@@ -140,7 +140,7 @@ public class Timeline {
 
 	private void readFrames(LittleEndianInputStream in, int ver)
 			throws IOException {
-		int numPoints = in.readShort();
+		int numPoints = in.readUnsignedShort();
 		int alpha = 0;
 		if (ver == 8) {
 			switch (in.readShort()) {
@@ -169,7 +169,7 @@ public class Timeline {
 		yMin = in.readShort();
 		yMax = in.readShort();
 
-		int numFrames = in.readShort();
+		int numFrames = in.readUnsignedShort();
 		frames = new Frame[numFrames];
 		for (int i = 0; i < numFrames; i++) {
 			frames[i] = new Frame();
@@ -179,13 +179,13 @@ public class Timeline {
 
 	private void readSequence(LittleEndianInputStream in)
 			throws IOException {
-		int numSeq = in.readShort();
+		int numSeq = in.readUnsignedShort();
 		if (numSeq <= 0)
 			throw new FileFormatException("Invalid sequence count");
 		in.readShort();
 		Frame[] sequence = new Frame[numSeq];
 		for (int i = 0; i < numSeq; i++)
-			sequence[i] = frames[in.readShort()];
+			sequence[i] = frames[in.readUnsignedShort()];
 		frames = sequence;
 	}
 

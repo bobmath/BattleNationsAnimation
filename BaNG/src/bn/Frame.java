@@ -49,7 +49,7 @@ public class Frame {
 
 	protected void read(LittleEndianInputStream in, int ver,
 			Timeline.Vertex[] coords) throws IOException {
-		int numPts = in.readShort();
+		int numPts = in.readUnsignedShort();
 		if (numPts < 0 || numPts % 6 != 0)
 			throw new FileFormatException("Unexpected frame size");
 		int numPolys = numPts / 6;
@@ -70,7 +70,7 @@ public class Frame {
 		int[] y = new int[4];
 		for (int i = 0; i < numPolys; i++) {
 			for (int j = 0; j < 6; j++)
-				p[j] = in.readShort();
+				p[j] = in.readUnsignedShort();
 			if (p[3] != p[0] || p[4] != p[2])
 				throw new FileFormatException("Unexpected frame arrangement");
 			Timeline.Vertex p0 = coords[p[0]], p1 = coords[p[1]],

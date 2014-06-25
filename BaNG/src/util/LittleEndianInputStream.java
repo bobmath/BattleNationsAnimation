@@ -28,7 +28,13 @@ public class LittleEndianInputStream extends BufferedInputStream {
 	public int readShort() throws IOException {
 		if (read(buf, 0, 2) != 2)
 			throw new EOFException();
-		return ((buf[0] & 0xff) | (buf[1] << 8));
+		return (buf[0] & 0xff) | (buf[1] << 8);
+	}
+
+	public int readUnsignedShort() throws IOException {
+		if (read(buf, 0, 2) != 2)
+			throw new EOFException();
+		return (buf[0] & 0xff) | ((buf[1] & 0xff) << 8);
 	}
 
 	public int readInt() throws IOException {
@@ -52,4 +58,5 @@ public class LittleEndianInputStream extends BufferedInputStream {
 			pos++;
 		return new String(buf, 0, pos, "us-ascii");
 	}
+
 }
