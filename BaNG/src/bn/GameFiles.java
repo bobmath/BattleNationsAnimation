@@ -45,6 +45,14 @@ public class GameFiles {
 		return updateDir.isDirectory() && installDir.isDirectory();
 	}
 
+	public static boolean init(File dir) {
+		if (!dir.isDirectory()) return false;
+		File manifest = new File(dir, "z2manifest.json");
+		if (!manifest.isFile()) return false;
+		updateDir = installDir = dir;
+		return initialized = true;
+	}
+
 	public static FileInputStream open(String filename)
 			throws IOException {
 		if (!initialized) init();

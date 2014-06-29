@@ -19,6 +19,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -51,7 +52,7 @@ import bn.Unit.Weapon;
 
 public class AnimationGrabber {
 
-	public static final String VERSION = "1.2.2";
+	public static final String VERSION = "1.2.3";
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -64,10 +65,23 @@ public class AnimationGrabber {
 
 	private static void start() {
 		if (!GameFiles.init()) {
-			JOptionPane.showMessageDialog(null,
-					"Unable to find Battle Nations directory.",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			return;
+			Object[] options = { "Bummer", "Locate BN Files" };
+			int opt = JOptionPane.showOptionDialog(null,
+					"Unable to find Battle Nations directory.", "Error",
+					JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+					null, options, options[0]);
+			if (opt != 1) return;
+			JFileChooser chooser = new JFileChooser();
+			chooser.setDialogTitle("BN Game Files");
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			opt = chooser.showOpenDialog(null);
+			if (opt != JFileChooser.APPROVE_OPTION) return;
+			if (!GameFiles.init(chooser.getSelectedFile())) {
+				JOptionPane.showMessageDialog(null,
+						"Unable to find Battle Nations files.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
 		try {
 			GameFiles.load();
