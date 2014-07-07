@@ -49,7 +49,9 @@ public class GameFiles {
 		if (!dir.isDirectory()) return false;
 		File manifest = new File(dir, "z2manifest.json");
 		if (!manifest.isFile()) return false;
-		updateDir = installDir = dir;
+		installDir = dir;
+		if (updateDir == null || !updateDir.isDirectory())
+			updateDir = dir;
 		return initialized = true;
 	}
 
