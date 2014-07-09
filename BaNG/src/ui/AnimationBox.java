@@ -66,7 +66,7 @@ public class AnimationBox extends JComponent {
 	private int numFrames;
 	private boolean paused;
 	private JSlider frameSlider;
-	protected boolean slowRescale;
+	protected boolean slowRescale = true;
 	protected JPopupMenu popup;
 
 	public AnimationBox() {
@@ -117,7 +117,7 @@ public class AnimationBox extends JComponent {
 		});
 		popup.add(restore);
 
-		final JCheckBoxMenuItem slow = new JCheckBoxMenuItem("Slow Downscale");
+		final JCheckBoxMenuItem slow = new JCheckBoxMenuItem("Slow Downscale", slowRescale);
 		slow.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
