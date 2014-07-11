@@ -74,11 +74,14 @@ public class DamagePattern implements Drawable {
 		double damage = abil.getRandomTarget() ? 0
 				: attack.getAverageDamage(attack.getMinRank());
 
-		double max = 0;
-		for (TargetSquare sq : targetArea)
-			if (sq.getValue() > max)
-				max = sq.getValue();
-		max -= 1e-6; // fudge
+		double max = 0, min = 999;
+		for (TargetSquare sq : targetArea) {
+			double val = sq.getValue();
+			if (val > max) max = val;
+			if (val < min) min = val;
+		}
+		double span = max - min;
+		if (span < 1e-6) span = 1e-6;
 
 		for (TargetSquare sq : targetArea) {
 			int x = sq.getX();
@@ -92,23 +95,32 @@ public class DamagePattern implements Drawable {
 			GridPoint loc = center.translate(x, y);
 			DamagePattern pat = new DamagePattern(loc.x, loc.y);
 
+			double val = (max - sq.getValue()) / span;
 			if (damage == 0) {
 				int pct = (int) Math.round(100 * sq.getValue());
 				if (pct < 1) pct = 1;
 				pat.label = pct + "%";
-				pat.color = (sq.getValue() >= max)
-						? DARK_CYAN : Color.CYAN;
+				pat.color = blend(val, DARK_CYAN, Color.CYAN);
 			}
 			else {
 				int dmg = (int) Math.round(damage * sq.getValue());
 				if (dmg < 1) dmg = 1;
 				pat.label = String.valueOf(dmg);
-				pat.color = (sq.getValue() >= max)
-						? REDDISH : Color.YELLOW;
+				pat.color = blend(val, REDDISH, Color.YELLOW);
 			}
 
 			list.add(pat);
 		}
+	}
+
+	private static Color blend(double x, Color c1, Color c2) {
+		if (x < 0.5/255) return c1;
+		if (x > 1-0.5/255) return c2;
+		double y = 1 - x;
+		return new Color(
+				(int) Math.round(y * c1.getRed()   + x * c2.getRed()),
+				(int) Math.round(y * c1.getGreen() + x * c2.getGreen()),
+				(int) Math.round(y * c1.getBlue()  + x * c2.getBlue()));
 	}
 
 	private boolean isVisible(int frame) {
