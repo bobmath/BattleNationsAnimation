@@ -14,6 +14,9 @@ import util.FileFormatException;
 
 public class Ability {
 
+	public static final int LOF_CONTACT = 0, LOF_DIRECT = 1,
+			LOF_PRECISE = 2, LOF_INDIRECT = 3;
+
 	public static final Ability NO_ABILITY = new Ability();
 
 	private static Map<String,Ability> abilities;
@@ -23,6 +26,7 @@ public class Ability {
 	private double damageFromWeapon, damageFromUnit;
 	private int damageBonus;
 	private int minRange, maxRange;
+	private int lineOfFire;
 	private boolean capture;
 	private int aoeDelay;
 	private String targetType;
@@ -82,6 +86,7 @@ public class Ability {
 		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
 		minRange = stats.getInt("minRange", 1);
 		maxRange = stats.getInt("maxRange", 1);
+		lineOfFire = stats.getInt("lineOfFire", 0);
 		capture = stats.getBoolean("capture");
 
 		damageArea = initArea(stats.getJsonObject("damageArea"), false);
@@ -173,6 +178,10 @@ public class Ability {
 
 	public int getMaxRange() {
 		return maxRange;
+	}
+
+	public int getLineOfFire() {
+		return lineOfFire;
 	}
 
 	public int getAoeDelay() {
@@ -271,6 +280,17 @@ public class Ability {
 				out2[j] = out[j];
 			return out2;
 		}
-	}
 
+		public static int width(TargetSquare[] area) {
+			int xMin = 0, xMax = 0;
+			for (int i = 0; i < area.length; i++) {
+				int x = area[i].x;
+				if (x < xMin)
+					xMin = x;
+				else if (x > xMax)
+					xMax = x;
+			}
+			return xMax - xMin + 1;
+		}
+	}
 }

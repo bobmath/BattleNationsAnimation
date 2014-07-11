@@ -40,21 +40,6 @@ public class DamagePattern implements Drawable {
 			List<Drawable> list) {
 		boolean flip = pos < 0;
 		Ability abil = attack.getAbility();
-		GridPoint center = new GridPoint(0, pos + range);
-		int yMin, yMax, yMinCorner;
-		if ("Weapon".equals(abil.getTargetType())) {
-			yMin = Math.max(-attack.getMaxRange(), -5);
-			yMinCorner = -5;
-			yMax = 0;
-			center = center.translate(0, -range + (flip ? 1 : -1));
-		}
-		else {
-			yMinCorner = yMin = -2;
-			yMax = Math.min(attack.getMaxRange() - 1, 2);
-		}
-
-		double damage = abil.getRandomTarget() ? 0
-				: attack.getAverageDamage(attack.getMinRank());
 
 		TargetSquare[] targetArea = abil.getTargetArea();
 		TargetSquare[] damageArea = abil.getDamageArea();
@@ -67,6 +52,27 @@ public class DamagePattern implements Drawable {
 		else if (damageArea != null && damageArea.length != 1) {
 			targetArea = TargetSquare.convolution(targetArea, damageArea);
 		}
+
+		GridPoint center = new GridPoint(0, pos + range);
+		int yMin, yMax, yMinCorner;
+		if ("Weapon".equals(abil.getTargetType())) {
+			//yMin = Math.max(-attack.getMaxRange(), -5);
+			yMin = -5;
+			if (abil.getLineOfFire() == Ability.LOF_CONTACT
+					&& TargetSquare.width(targetArea) == 1
+					&& attack.getMaxRange() < 5)
+				yMin = -attack.getMaxRange();
+			yMinCorner = -5;
+			yMax = 0;
+			center = center.translate(0, -range + (flip ? 1 : -1));
+		}
+		else {
+			yMinCorner = yMin = -2;
+			yMax = Math.min(attack.getMaxRange() - 1, 2);
+		}
+
+		double damage = abil.getRandomTarget() ? 0
+				: attack.getAverageDamage(attack.getMinRank());
 
 		double max = 0;
 		for (TargetSquare sq : targetArea)
