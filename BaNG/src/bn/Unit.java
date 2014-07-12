@@ -276,6 +276,9 @@ public class Unit implements Comparable<Unit> {
 			return prereq == null ? 1
 					: Math.max(prereq.getMinRank(), 1);
 		}
+		public int getMaxRank() {
+			return Unit.this.getMaxRank();
+		}
 		public int getHitDelay() {
 			TargetSquare[] area = ability.getTargetArea();
 			int aoeDelay = ability.getAoeDelay();

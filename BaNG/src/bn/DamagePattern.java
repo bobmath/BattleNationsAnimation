@@ -72,7 +72,8 @@ public class DamagePattern implements Drawable {
 		}
 
 		double damage = abil.getRandomTarget() ? 0
-				: attack.getAverageDamage(attack.getMinRank());
+				: attack.getAverageDamage(attack.getMaxRank())
+				* abil.getNumAttacks();
 
 		double max = 0, min = 999;
 		for (TargetSquare sq : targetArea) {

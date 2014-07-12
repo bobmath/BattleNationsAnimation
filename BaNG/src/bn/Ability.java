@@ -25,6 +25,7 @@ public class Ability {
 	private String frontAnimationName, backAnimationName;
 	private double damageFromWeapon, damageFromUnit;
 	private int damageBonus;
+	private int numAttacks;
 	private int minRange, maxRange;
 	private int lineOfFire;
 	private boolean capture;
@@ -86,6 +87,8 @@ public class Ability {
 		damageFromUnit = getDouble(stats, "damageFromUnit", 1);
 		minRange = stats.getInt("minRange", 1);
 		maxRange = stats.getInt("maxRange", 1);
+		numAttacks = stats.getInt("shotsPerAttack", 1)
+				* stats.getInt("attacksPerUse", 1);
 		lineOfFire = stats.getInt("lineOfFire", 0);
 		capture = stats.getBoolean("capture");
 
@@ -182,6 +185,10 @@ public class Ability {
 
 	public int getLineOfFire() {
 		return lineOfFire;
+	}
+
+	public int getNumAttacks() {
+		return numAttacks;
 	}
 
 	public int getAoeDelay() {
