@@ -71,24 +71,32 @@ public class DamagePattern implements Drawable {
 			yMax = Math.min(attack.getMaxRange() - 1, 2);
 		}
 
-		double damage = abil.getRandomTarget() ? 0
-				: attack.getAverageDamage(attack.getMaxRank())
-				* abil.getNumAttacks();
-
-		double max = 0, min = 999;
-		for (TargetSquare sq : targetArea) {
-			double val = sq.getValue();
-			if (val > max) max = val;
-			if (val < min) min = val;
+		double max = 0, min = 9999;
+		for (int i = 0; i < targetArea.length; i++) {
+			TargetSquare sq = targetArea[i];
+			int x = sq.getX();
+			int y = sq.getY();
+			if (y < yMin || y > yMax || x < -4 || x > 4
+					|| (y == yMax || y == yMinCorner) && (x == -4 || x == 4)) {
+				targetArea[i] = null;
+			}
+			else {
+				double val = sq.getValue();
+				if (val > max) max = val;
+				if (val < min) min = val;
+			}
 		}
 		double span = max - min;
 		if (span < 1e-6) span = 1e-6;
 
+		double damage = abil.getRandomTarget() ? 0
+				: attack.getAverageDamage(attack.getMaxRank())
+				* abil.getNumAttacks();
+
 		for (TargetSquare sq : targetArea) {
+			if (sq == null) continue;
 			int x = sq.getX();
 			int y = sq.getY();
-			if (y < yMin || y > yMax || x < -4 || x > 4) continue;
-			if ((y == yMax || y == yMinCorner) && (x == -4 || x == 4)) continue;
 			if (flip) {
 				x = -x;
 				y = -y;
