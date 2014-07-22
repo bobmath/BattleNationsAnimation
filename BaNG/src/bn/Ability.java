@@ -217,20 +217,19 @@ public class Ability {
 
 	public static class TargetSquare implements Comparable<TargetSquare> {
 		public static final TargetSquare SINGLE_TARGET = new TargetSquare();
-		private double value, miss;
+		private double value, chance;
 		private int x, y, order;
 		private TargetSquare() {
-			value = 1;
+			value = chance = 1;
 		}
 		protected TargetSquare(JsonObject json, double weight) {
 			if (weight == 0) {
 				value = getDouble(json, "damagePercent", 0) / 100;
+				chance = 1;
 				order = json.getInt("order", 0);
 			}
-			else {
-				value = getDouble(json, "weight", 0) / weight;
-				miss  = 1 - value;
-			}
+			else
+				value = chance = getDouble(json, "weight", 0) / weight;
 			JsonObject pos = json.getJsonObject("pos");
 			if (pos != null) {
 				x = pos.getInt("x", 0);
@@ -242,13 +241,13 @@ public class Ability {
 			y = a.y + b.y;
 			order = a.order + b.order;
 			value = a.value * b.value;
-			miss  = a.miss + b.miss - a.miss * b.miss;
+			chance = a.chance * b.chance;
 		}
 		public double getValue() {
 			return value;
 		}
-		public double getMiss() {
-			return miss;
+		public double getChance() {
+			return chance;
 		}
 		public int getX() {
 			return x;
@@ -282,7 +281,7 @@ public class Ability {
 				TargetSquare b = out[j];
 				if (a.x == b.x && a.y == b.y) {
 					a.value += b.value;
-					a.miss  *= b.miss;
+					a.chance += b.chance;
 				}
 				else
 					out[i++] = a = b;

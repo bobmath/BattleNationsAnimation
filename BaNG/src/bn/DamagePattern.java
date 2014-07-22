@@ -110,9 +110,9 @@ public class DamagePattern implements Drawable {
 
 			if (abil.getRandomTarget()) {
 				int pct = (int) Math.round(100 * (1 -
-						Math.pow(sq.getMiss(), abil.getNumAttacks())));
+						Math.pow(1 - sq.getChance(), abil.getNumAttacks())));
 				if (pct < 1) pct = 1;
-				if (pct > 99 && sq.getMiss() > 0) pct = 99;
+				if (pct > 99 && sq.getChance() < 1 - 1e-10) pct = 99;
 				pat.label2 = pct + "%";
 			}
 
