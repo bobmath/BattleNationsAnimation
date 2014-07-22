@@ -3,6 +3,7 @@ package bn;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.geom.AffineTransform;
@@ -22,13 +23,12 @@ public class DamagePattern implements Drawable {
 			new AffineTransform(1, 0.5, -1, 0.5, 0, 0);
 	private static final BasicStroke STROKE = new BasicStroke(2);
 	private static final Color REDDISH = new Color(0xff, 0x4c, 0x4c);
-	private static final Color DARK_CYAN = new Color(0x00, 0xcc, 0xcc);
 
 	private int startFrame, endFrame;
 	private boolean keep;
 	private double xPos, yPos;
 	private Color color;
-	private String label;
+	private String label, label2;
 
 	private DamagePattern(int x, int y) {
 		xPos = x;
@@ -56,7 +56,6 @@ public class DamagePattern implements Drawable {
 		GridPoint center = new GridPoint(0, pos + range);
 		int yMin, yMax, yMinCorner;
 		if ("Weapon".equals(abil.getTargetType())) {
-			//yMin = Math.max(-attack.getMaxRange(), -5);
 			yMin = -5;
 			if (abil.getLineOfFire() == Ability.LOF_CONTACT
 					&& TargetSquare.width(targetArea) == 1
@@ -89,8 +88,7 @@ public class DamagePattern implements Drawable {
 		double span = max - min;
 		if (span < 1e-6) span = 1e-6;
 
-		double damage = abil.getRandomTarget() ? 0
-				: attack.getAverageDamage(attack.getMaxRank())
+		double damage = attack.getAverageDamage(attack.getMaxRank())
 				* abil.getNumAttacks();
 
 		for (TargetSquare sq : targetArea) {
@@ -104,18 +102,18 @@ public class DamagePattern implements Drawable {
 			GridPoint loc = center.translate(x, y);
 			DamagePattern pat = new DamagePattern(loc.x, loc.y);
 
-			double val = (max - sq.getValue()) / span;
-			if (damage == 0) {
-				int pct = (int) Math.round(100 * sq.getValue());
+			int dmg = (int) Math.round(damage * sq.getValue());
+			if (dmg < 1) dmg = 1;
+			pat.label = String.valueOf(dmg);
+			pat.color = blend((max - sq.getValue()) / span,
+					REDDISH, Color.YELLOW);
+
+			if (abil.getRandomTarget()) {
+				int pct = (int) Math.round(100 * (1 -
+						Math.pow(sq.getMiss(), abil.getNumAttacks())));
 				if (pct < 1) pct = 1;
-				pat.label = pct + "%";
-				pat.color = blend(val, DARK_CYAN, Color.CYAN);
-			}
-			else {
-				int dmg = (int) Math.round(damage * sq.getValue());
-				if (dmg < 1) dmg = 1;
-				pat.label = String.valueOf(dmg);
-				pat.color = blend(val, REDDISH, Color.YELLOW);
+				if (pct > 99 && sq.getMiss() > 0) pct = 99;
+				pat.label2 = pct + "%";
 			}
 
 			list.add(pat);
@@ -146,10 +144,20 @@ public class DamagePattern implements Drawable {
 		g.setStroke(STROKE);
 		g.drawPolygon(DIAMOND);
 		g.setFont(FONT);
-		Rectangle2D bounds = g.getFontMetrics().getStringBounds(label, g);
+		FontMetrics metrics = g.getFontMetrics();
+		Rectangle2D bounds = metrics.getStringBounds(label, g);
 		g.transform(SKEW);
-		g.translate(-bounds.getCenterX(), -bounds.getCenterY());
-		g.drawString(label, 0, 0);
+		if (label2 == null) {
+			g.drawString(label, (int) -bounds.getCenterX(),
+					(int) -bounds.getCenterY());
+		}
+		else {
+			g.drawString(label, (int) -bounds.getCenterX(),
+					(int) -(bounds.getY() + bounds.getHeight()));
+			bounds = metrics.getStringBounds(label2, g);
+			g.drawString(label2, (int) -bounds.getCenterX(),
+					(int) -bounds.getY());
+		}
 	}
 
 	@Override

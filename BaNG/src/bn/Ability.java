@@ -217,7 +217,7 @@ public class Ability {
 
 	public static class TargetSquare implements Comparable<TargetSquare> {
 		public static final TargetSquare SINGLE_TARGET = new TargetSquare();
-		private double value;
+		private double value, miss;
 		private int x, y, order;
 		private TargetSquare() {
 			value = 1;
@@ -227,8 +227,10 @@ public class Ability {
 				value = getDouble(json, "damagePercent", 0) / 100;
 				order = json.getInt("order", 0);
 			}
-			else
+			else {
 				value = getDouble(json, "weight", 0) / weight;
+				miss  = 1 - value;
+			}
 			JsonObject pos = json.getJsonObject("pos");
 			if (pos != null) {
 				x = pos.getInt("x", 0);
@@ -240,9 +242,13 @@ public class Ability {
 			y = a.y + b.y;
 			order = a.order + b.order;
 			value = a.value * b.value;
+			miss  = a.miss + b.miss - a.miss * b.miss;
 		}
 		public double getValue() {
 			return value;
+		}
+		public double getMiss() {
+			return miss;
 		}
 		public int getX() {
 			return x;
@@ -274,18 +280,15 @@ public class Ability {
 			TargetSquare a = out[0];
 			for (int j = 1; j < out.length; j++) {
 				TargetSquare b = out[j];
-				if (a.x == b.x && a.y == b.y)
+				if (a.x == b.x && a.y == b.y) {
 					a.value += b.value;
+					a.miss  *= b.miss;
+				}
 				else
 					out[i++] = a = b;
 			}
 
-			if (i == out.length)
-				return out;
-			TargetSquare[] out2 = new TargetSquare[i];
-			for (int j = 0; j < i; j++)
-				out2[j] = out[j];
-			return out2;
+			return i == out.length ? out : Arrays.copyOf(out, i);
 		}
 
 		public static int width(TargetSquare[] area) {
@@ -300,4 +303,5 @@ public class Ability {
 			return xMax - xMin + 1;
 		}
 	}
+
 }
