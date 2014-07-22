@@ -103,7 +103,7 @@ public class DamagePattern implements Drawable {
 			DamagePattern pat = new DamagePattern(loc.x, loc.y);
 
 			int dmg = (int) Math.round(damage * sq.getValue());
-			if (dmg < 1) dmg = 1;
+			if (dmg < 1 && damage > 0) dmg = 1;
 			pat.label = String.valueOf(dmg);
 			pat.color = blend((max - sq.getValue()) / span,
 					REDDISH, Color.YELLOW);
