@@ -122,10 +122,8 @@ public class Ability {
 		if (data == null) return null;
 
 		double weight = 0;
-		if (random) {
-			for (JsonValue item : data)
-				weight += getDouble((JsonObject) item, "weight", 0);
-		}
+		for (JsonValue item : data)
+			weight += getDouble((JsonObject) item, "weight", 0);
 
 		TargetSquare[] squares = new TargetSquare[data.size()];
 		for (int i = 0; i < squares.length; i++)
