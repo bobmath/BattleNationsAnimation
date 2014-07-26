@@ -122,8 +122,10 @@ public class Ability {
 		if (data == null) return null;
 
 		double weight = 0;
-		for (JsonValue item : data)
-			weight += getDouble((JsonObject) item, "weight", 0);
+		if (random) {
+			for (JsonValue item : data)
+				weight += getDouble((JsonObject) item, "weight", 0);
+		}
 
 		TargetSquare[] squares = new TargetSquare[data.size()];
 		for (int i = 0; i < squares.length; i++)
@@ -222,7 +224,7 @@ public class Ability {
 		}
 		protected TargetSquare(JsonObject json, double weight) {
 			if (weight == 0) {
-				value = getDouble(json, "damagePercent", 0) / 100;
+				value = getDouble(json, "damagePercent", 100) / 100;
 				chance = 1;
 				order = json.getInt("order", 0);
 			}
