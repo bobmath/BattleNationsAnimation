@@ -52,7 +52,7 @@ import bn.Unit.Weapon;
 
 public class AnimationGrabber {
 
-	public static final String VERSION = "1.3.1";
+	public static final String VERSION = "1.3.2";
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -133,7 +133,7 @@ public class AnimationGrabber {
 		scroller.setMinimumSize(new Dimension(100, 100));
 
 		rightPanel = new JPanel(new BorderLayout());
-		rightPanel.setPreferredSize(new Dimension(400, 500));
+		rightPanel.setPreferredSize(new Dimension(500, 500));
 		animBox = new AnimationBox();
 		animBox.setMinimumSize(new Dimension(100, 100));
 		rightPanel.add(animBox);
@@ -182,6 +182,20 @@ public class AnimationGrabber {
 		});
 		backgroundCtrl.setMaximumSize(backgroundCtrl.getPreferredSize());
 		animPanel.add(backgroundCtrl);
+
+		SpinnerModel bgScaleRange = new SpinnerNumberModel(100, 10, 400, 10);
+		final JSpinner bgScaleCtrl = new JSpinner(bgScaleRange);
+		bgScaleCtrl.setMaximumSize(bgScaleCtrl.getPreferredSize());
+		bgScaleCtrl.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Number value = (Number) bgScaleCtrl.getValue();
+				animBox.setBgScale(value.doubleValue() / 100);
+				updateSize();
+			}
+		});
+		animPanel.add(new JLabel(" BG Scale:"));
+		animPanel.add(bgScaleCtrl);
 
 		SpinnerModel scaleRange = new SpinnerNumberModel(100, 5, 200, 5);
 		final JSpinner scaleCtrl = new JSpinner(scaleRange);

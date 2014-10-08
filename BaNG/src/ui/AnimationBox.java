@@ -60,7 +60,7 @@ public class AnimationBox extends JComponent {
 	private Timer timer;
 	protected int tick;
 	private Color backgroundColor;
-	protected double scale = 1;
+	protected double scale = 1, bgScale = 1;
 	protected BufferedImage backgroundImage;
 	protected int backgroundX, backgroundY;
 	private int numFrames;
@@ -208,8 +208,8 @@ public class AnimationBox extends JComponent {
 		if (im != null) {
 			int edge = scale >= 1 ? 2 :
 				2 * (int) Math.ceil(1.5 / scale);
-			int width = im.getWidth() - edge;
-			int height = im.getHeight() - edge;
+			double width = (im.getWidth() - edge) * bgScale;
+			double height = (im.getHeight() - edge) * bgScale;
 			Rectangle2D.Double b = new Rectangle2D.Double(
 					backgroundX - width/2, backgroundY - height/2,
 					width, height);
@@ -253,10 +253,15 @@ public class AnimationBox extends JComponent {
 		g.translate(0.5*(dim.width - bounds.width) - bounds.x,
 				0.5*(dim.height - bounds.height) - bounds.y);
 		g.scale(scale, scale);
+		AffineTransform oldTrans = g.getTransform();
 
-		if (im != null)
-			g.drawImage(im, backgroundX - im.getWidth()/2,
-					backgroundY - im.getHeight()/2, null);
+		if (im != null) {
+			g.translate(backgroundX, backgroundY);
+			g.scale(bgScale, bgScale);
+			g.translate(-0.5*im.getWidth(), -0.5*im.getHeight());
+			g.drawImage(im, 0, 0, null);
+			g.setTransform(oldTrans);
+		}
 
 		// This makes drawing the background image outrageously slow
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -264,7 +269,6 @@ public class AnimationBox extends JComponent {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 
-		AffineTransform oldTrans = g.getTransform();
 		for (Drawable obj : objects) {
 			obj.drawFrame(frame, g);
 			g.setTransform(oldTrans);
@@ -344,8 +348,15 @@ public class AnimationBox extends JComponent {
 		repaint();
 	}
 
+	public void setBgScale(double scale) {
+		if (scale <= 0 || scale > 10)
+			throw new IllegalArgumentException("Invalid scale");
+		this.bgScale  = scale;
+		repaint();
+	}
+
 	public void setScale(double scale) {
-		if (scale <= 0 || scale > 2)
+		if (scale <= 0 || scale > 10)
 			throw new IllegalArgumentException("Invalid scale");
 		this.scale  = scale;
 		repaint();
