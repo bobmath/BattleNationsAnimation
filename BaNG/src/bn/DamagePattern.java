@@ -37,7 +37,7 @@ public class DamagePattern implements Drawable {
 	}
 
 	public static void buildAnimation(Attack attack, int pos, int range,
-			List<Drawable> list) {
+			List<Drawable> list, int rank) {
 		boolean flip = pos < 0;
 		Ability abil = attack.getAbility();
 
@@ -88,8 +88,7 @@ public class DamagePattern implements Drawable {
 		double span = max - min;
 		if (span < 1e-6) span = 1e-6;
 
-		double damage = attack.getAverageDamage(attack.getMaxRank())
-				* abil.getNumAttacks();
+		double damage = attack.getAverageDamage(rank) * abil.getNumAttacks();
 
 		for (TargetSquare sq : targetArea) {
 			if (sq == null) continue;

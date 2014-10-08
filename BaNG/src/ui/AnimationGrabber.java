@@ -113,7 +113,7 @@ public class AnimationGrabber {
 	private JComboBox<Attack> attackCtrl;
 	private JCheckBox dummyBox, damageBox;
 
-	private JSpinner rangeCtrl;
+	private JSpinner rangeCtrl, rankCtrl;
 	private JPanel buildingPanel;
 	private JComboBox<String> busyCtrl;
 
@@ -320,7 +320,13 @@ public class AnimationGrabber {
 		row.add(weaponCtrl);
 
 		attackCtrl = new JComboBox<Attack>();
-		attackCtrl.addActionListener(update);
+		attackCtrl.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateRank();
+				updateAnimation();
+			}
+		});
 		row.add(attackCtrl);
 		row.add(Box.createHorizontalGlue());
 		unitPanel.add(row);
@@ -343,18 +349,27 @@ public class AnimationGrabber {
 		SpinnerModel range = new SpinnerNumberModel(1, 1, 5, 1);
 		rangeCtrl = new JSpinner(range);
 		rangeCtrl.setMaximumSize(rangeCtrl.getPreferredSize());
-		rangeCtrl.addChangeListener(new ChangeListener() {
+		ChangeListener animUpdater = new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				updateAnimation();
 			}
-		});
+		};
+		rangeCtrl.addChangeListener(animUpdater);
 		row.add(rangeCtrl);
 
 		row.add(Box.createHorizontalStrut(8));
 		damageBox = new JCheckBox("Damage");
 		damageBox.addItemListener(itemListener);
 		row.add(damageBox);
+
+		row.add(Box.createHorizontalStrut(8));
+		row.add(new JLabel("Rank:"));
+		range = new SpinnerNumberModel(6, 1, 6, 1);
+		rankCtrl = new JSpinner(range);
+		rankCtrl.setMaximumSize(rankCtrl.getPreferredSize());
+		rankCtrl.addChangeListener(animUpdater);
+		row.add(rankCtrl);
 
 		row.add(Box.createHorizontalGlue());
 		unitPanel.add(row);
@@ -463,8 +478,10 @@ public class AnimationGrabber {
 			if (anim != null && attackCtrl.getSelectedIndex() > 0) {
 				Attack attack = (Attack) attackCtrl.getSelectedItem();
 
-				if (damageBox.isSelected())
-					DamagePattern.buildAnimation(attack, pos, range, list);
+				if (damageBox.isSelected()) {
+					int rank = ((Number) rankCtrl.getValue()).intValue();
+					DamagePattern.buildAnimation(attack, pos, range, list, rank);
+				}
 
 				Animation hitAnim = front ? attack.getBackAnimation()
 						: attack.getFrontAnimation();
@@ -521,6 +538,15 @@ public class AnimationGrabber {
 			rangeCtrl.setModel(new SpinnerNumberModel(range, min, max, 1));
 		}
 		return range;
+	}
+
+	private void updateRank() {
+		Attack attack = (Attack) attackCtrl.getSelectedItem();
+		int min = attack.getMinRank();
+		int max = attack.getMaxRank();
+		if (min > 0 && min <= max) {
+			rankCtrl.setModel(new SpinnerNumberModel(max, min, max, 1));
+		}
 	}
 
 	public void showUI() {
